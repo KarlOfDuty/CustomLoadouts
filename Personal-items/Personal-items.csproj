@@ -66,4 +66,10 @@
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>cd $(ProjectDir)
+copy /y bin\Personal-items.dll ..\..\..\scpserver\sm_plugins\
+mkdir ..\..\..\scpserver\sm_plugins\dependencies
+copy /y bin\Newtonsoft.Json.dll ..\..\..\scpserver\sm_plugins\dependencies\</PostBuildEvent>
+  </PropertyGroup>
 </Project>

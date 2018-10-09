@@ -3,9 +3,13 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using Newtonsoft.Json.Linq;
 using Smod2;
+using Smod2.API;
 using Smod2.Attributes;
+using Smod2.Commands;
+using Smod2.EventHandlers;
 using Smod2.Events;
 
 namespace PersonalItems
@@ -22,7 +26,22 @@ namespace PersonalItems
     )]
     public class PersonalItems : Plugin
     {
-        JArray jsonObject;
+        public JArray jsonObject;
+        public bool spawning = false;
+        readonly string defaultConfig = 
+        "[\n" +
+	    "    {\n" +
+		"        \"steamid\": \"76561198022373616\",\n" +
+		"        \"class\": \"all\",\n" +
+		"        \"item\": \"COIN\"\n" +
+        "    },\n" +
+        "    {\n" +
+        "        \"steamid\": \"76561198022373616\",\n" +
+        "        \"class\": \"CLASSD\",\n" +
+        "        \"item\": \"CUP\"\n" +
+        "    },\n" +
+        "]";
+
         public override void OnDisable()
         {
 
@@ -30,33 +49,80 @@ namespace PersonalItems
 
         public override void Register()
         {
-            
+            this.AddEventHandlers(new ItemGivingHandler(this), Priority.High);
+            this.AddCommand("pi_reload", new ReloadCommand(this));
         }
 
         public override void OnEnable()
         {
             if (!File.Exists(FileManager.AppFolder + "personal-items.json"))
             {
-                File.WriteAllText(FileManager.AppFolder + "personal-items.json", "[]");
+                File.WriteAllText(FileManager.AppFolder + "personal-items.json", defaultConfig);
             }
             jsonObject = JArray.Parse(File.ReadAllText(FileManager.AppFolder + "personal-items.json"));
         }
-
-        public static bool IsPossibleSteamID(string steamID)
+    }
+    class ReloadCommand : ICommandHandler
+    {
+        private PersonalItems plugin;
+        public ReloadCommand(PersonalItems plugin)
         {
-            return (steamID.Length == 17 && long.TryParse(steamID, out long n));
+            this.plugin = plugin;
         }
 
-        public Smod2.API.Player GetPlayer(string steamID)
+        public string GetCommandDescription()
         {
-            foreach (Smod2.API.Player player in this.pluginManager.Server.GetPlayers())
+            return "Reloads the JSON config of Personal-Items";
+        }
+
+        public string GetUsage()
+        {
+            return "pi_reload";
+        }
+
+        public string[] OnCall(ICommandSender sender, string[] args)
+        {
+            plugin.jsonObject = JArray.Parse(File.ReadAllText(FileManager.AppFolder + "personal-items.json"));
+            return new string[] { "Personal-Items JSON config has been reloaded." };
+        }
+    }
+
+    class ItemGivingHandler : IEventHandlerSpawn
+    {
+        private PersonalItems plugin;
+        public ItemGivingHandler(PersonalItems plugin)
+        {
+            this.plugin = plugin;
+        }
+
+        public void OnSpawn(PlayerSpawnEvent ev)
+        {
+            if(!plugin.spawning)
             {
-                if (player.SteamId == steamID)
+                Thread messageThread = new Thread(new ThreadStart(() => new DelayedItemGiver(plugin, ev.Player)));
+                messageThread.Start();
+            }
+        }
+    }
+
+    class DelayedItemGiver
+    {
+        public DelayedItemGiver(PersonalItems plugin, Player player)
+        {
+            plugin.spawning = true;
+            Thread.Sleep(500);
+            for (int i = 0; i < plugin.jsonObject.Count; i++)
+            {
+                if (plugin.jsonObject[i].SelectToken("steamid").Value<string>() == player.SteamId)
                 {
-                    return player;
+                    if(string.Equals(plugin.jsonObject[i].SelectToken("class").Value<string>(), "ALL", StringComparison.OrdinalIgnoreCase) 
+                    || string.Equals(plugin.jsonObject[i].SelectToken("class").Value<string>(), player.TeamRole.Role.ToString(), StringComparison.OrdinalIgnoreCase))
+                    {
+                        player.GiveItem((ItemType)Enum.Parse(typeof(ItemType), plugin.jsonObject[i].SelectToken("item").Value<string>()));
+                    }
                 }
             }
-            return null;
+            plugin.spawning = false;
         }
     }
 }
