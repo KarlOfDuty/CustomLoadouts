@@ -25,6 +25,8 @@ Default config:
 ]
 ```
 
+You can add more entries by following the example above.
+
 # Command
 
 `pi_reload` - Reloads the pi config.
