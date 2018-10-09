@@ -15,17 +15,19 @@ Default config:
     {
         "steamid": "76561198022373616",
         "class": "all",
-        "item": "COIN"
+        "item": "COIN",
+        "chance": 50
     },
     {
         "steamid": "76561198022373616",
         "class": "CLASSD",
-        "item": "CUP"
+        "item": "CUP",
+        "chance": 50
     },
 ]
 ```
 
-You can add more entries by following the example above.
+You can add more entries by following the example above. I believe each config option is pretty self explanatory especially with the example above. If you have any questions, you can ask them in my discord server at the link above.
 
 # Command
 
