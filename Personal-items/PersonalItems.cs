@@ -33,12 +33,14 @@ namespace PersonalItems
 	    "    {\n" +
 		"        \"steamid\": \"76561198022373616\",\n" +
 		"        \"class\": \"all\",\n" +
-		"        \"item\": \"COIN\"\n" +
+		"        \"item\": \"COIN\",\n" +
+        "        \"chance\": \"50\"\n" +
         "    },\n" +
         "    {\n" +
         "        \"steamid\": \"76561198022373616\",\n" +
         "        \"class\": \"CLASSD\",\n" +
-        "        \"item\": \"CUP\"\n" +
+        "        \"item\": \"CUP\",\n" +
+        "        \"chance\": \"50\"\n" +
         "    },\n" +
         "]";
 
@@ -111,6 +113,7 @@ namespace PersonalItems
         {
             plugin.spawning = true;
             Thread.Sleep(500);
+            Random rnd = new Random();
             for (int i = 0; i < plugin.jsonObject.Count; i++)
             {
                 if (plugin.jsonObject[i].SelectToken("steamid").Value<string>() == player.SteamId)
@@ -118,7 +121,10 @@ namespace PersonalItems
                     if(string.Equals(plugin.jsonObject[i].SelectToken("class").Value<string>(), "ALL", StringComparison.OrdinalIgnoreCase) 
                     || string.Equals(plugin.jsonObject[i].SelectToken("class").Value<string>(), player.TeamRole.Role.ToString(), StringComparison.OrdinalIgnoreCase))
                     {
-                        player.GiveItem((ItemType)Enum.Parse(typeof(ItemType), plugin.jsonObject[i].SelectToken("item").Value<string>()));
+                        if(rnd.Next(1,100) <= plugin.jsonObject[i].SelectToken("chance").Value<int>())
+                        {
+                            player.GiveItem((ItemType)Enum.Parse(typeof(ItemType), plugin.jsonObject[i].SelectToken("item").Value<string>()));
+                        }
                     }
                 }
             }
