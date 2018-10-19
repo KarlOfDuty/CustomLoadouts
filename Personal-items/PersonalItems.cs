@@ -19,7 +19,7 @@ namespace PersonalItems
         name = "Personal-items",
         description = "Gives specific players items on spawn.",
         id = "karlofduty.personal-items",
-        version = "1.0.0",
+        version = "1.1.0",
         SmodMajor = 3,
         SmodMinor = 1,
         SmodRevision = 18
