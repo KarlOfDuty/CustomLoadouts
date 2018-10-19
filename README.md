@@ -13,21 +13,23 @@ Default config:
 ```json
 [
     {
+        "role": "all",
         "steamid": "76561198022373616",
         "class": "all",
         "item": "COIN",
-        "chance": 50
+        "chance": "50"
     },
     {
-        "steamid": "76561198022373616",
+        "role": "donator",
+        "steamid": "all",
         "class": "CLASSD",
         "item": "CUP",
-        "chance": 50
+        "chance": "50"
     },
 ]
 ```
 
-You can add more entries by following the example above. I believe each config option is pretty self explanatory especially with the example above. If you have any questions, you can ask them in my discord server at the link above.
+You can add more entries by following the example above. I believe each config option is pretty self explanatory especially with the example above. The role, steamid and class can all be replaced with ALL. If you have any questions, you can ask them in my discord server at the link above.
 
 # Command
 
