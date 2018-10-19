@@ -29,19 +29,21 @@ namespace PersonalItems
         public JArray jsonObject;
         public bool spawning = false;
         readonly string defaultConfig = 
-        "[\n" +
-	    "    {\n" +
-		"        \"steamid\": \"76561198022373616\",\n" +
-		"        \"class\": \"all\",\n" +
-		"        \"item\": \"COIN\",\n" +
-        "        \"chance\": \"50\"\n" +
-        "    },\n" +
-        "    {\n" +
+        "[\n"                                           +
+	    "    {\n"                                       +
+        "        \"role\": \"all\",\n"                  +
         "        \"steamid\": \"76561198022373616\",\n" +
-        "        \"class\": \"CLASSD\",\n" +
-        "        \"item\": \"CUP\",\n" +
-        "        \"chance\": \"50\"\n" +
-        "    },\n" +
+		"        \"class\": \"all\",\n"                 +
+		"        \"item\": \"COIN\",\n"                 +
+        "        \"chance\": \"50\"\n"                  +
+        "    },\n"                                      +
+        "    {\n"                                       +
+        "        \"role\": \"donator\",\n"              +
+        "        \"steamid\": \"all\",\n"               +
+        "        \"class\": \"CLASSD\",\n"              +
+        "        \"item\": \"CUP\",\n"                  +
+        "        \"chance\": \"50\"\n"                  +
+        "    },\n"                                      +
         "]";
 
         public override void OnDisable()
@@ -116,14 +118,19 @@ namespace PersonalItems
             Random rnd = new Random();
             for (int i = 0; i < plugin.jsonObject.Count; i++)
             {
-                if (plugin.jsonObject[i].SelectToken("steamid").Value<string>() == player.SteamId)
+                if (string.Equals(plugin.jsonObject[i].SelectToken("role").Value<string>(), player.TeamRole.Role.ToString(), StringComparison.OrdinalIgnoreCase)
+                || string.Equals(plugin.jsonObject[i].SelectToken("role").Value<string>(), "ALL", StringComparison.OrdinalIgnoreCase))
                 {
-                    if(string.Equals(plugin.jsonObject[i].SelectToken("class").Value<string>(), "ALL", StringComparison.OrdinalIgnoreCase) 
-                    || string.Equals(plugin.jsonObject[i].SelectToken("class").Value<string>(), player.TeamRole.Role.ToString(), StringComparison.OrdinalIgnoreCase))
+                    if (plugin.jsonObject[i].SelectToken("steamid").Value<string>() == player.SteamId 
+                    || string.Equals(plugin.jsonObject[i].SelectToken("steamid").Value<string>(), "ALL", StringComparison.OrdinalIgnoreCase))
                     {
-                        if(rnd.Next(1,100) <= plugin.jsonObject[i].SelectToken("chance").Value<int>())
+                        if (string.Equals(plugin.jsonObject[i].SelectToken("class").Value<string>(), "ALL", StringComparison.OrdinalIgnoreCase)
+                        || string.Equals(plugin.jsonObject[i].SelectToken("class").Value<string>(), player.TeamRole.Role.ToString(), StringComparison.OrdinalIgnoreCase))
                         {
-                            player.GiveItem((ItemType)Enum.Parse(typeof(ItemType), plugin.jsonObject[i].SelectToken("item").Value<string>()));
+                            if (rnd.Next(1, 100) <= plugin.jsonObject[i].SelectToken("chance").Value<int>())
+                            {
+                                player.GiveItem((ItemType)Enum.Parse(typeof(ItemType), plugin.jsonObject[i].SelectToken("item").Value<string>()));
+                            }
                         }
                     }
                 }
