@@ -19,15 +19,15 @@ namespace PersonalItems
         name = "Personal-items",
         description = "Gives specific players items on spawn.",
         id = "karlofduty.personal-items",
-        version = "1.1.0",
+        version = "1.2.0",
         SmodMajor = 3,
         SmodMinor = 1,
-        SmodRevision = 18
+        SmodRevision = 19
     )]
     public class PersonalItems : Plugin
     {
         public JArray jsonObject;
-        public bool spawning = false;
+        public HashSet<string> spawning = new HashSet<string>();
         readonly string defaultConfig = 
         "[\n"                                           +
 	    "    {\n"                                       +
@@ -59,11 +59,17 @@ namespace PersonalItems
 
         public override void OnEnable()
         {
-            if (!File.Exists(FileManager.AppFolder + "personal-items.json"))
+            if (!Directory.Exists(FileManager.AppFolder + "Personal-items"))
             {
-                File.WriteAllText(FileManager.AppFolder + "personal-items.json", defaultConfig);
+                Directory.CreateDirectory(FileManager.AppFolder + "Personal-items");
             }
-            jsonObject = JArray.Parse(File.ReadAllText(FileManager.AppFolder + "personal-items.json"));
+
+            if (!File.Exists(FileManager.AppFolder + "Personal-items/config.json"))
+            {
+                File.WriteAllText(FileManager.AppFolder + "Personal-items/config.json", defaultConfig);
+            }
+            jsonObject = JArray.Parse(File.ReadAllText(FileManager.AppFolder + "Personal-items/config.json"));
+            this.Info("Personal-Items enabled.");
         }
     }
     class ReloadCommand : ICommandHandler
@@ -86,8 +92,8 @@ namespace PersonalItems
 
         public string[] OnCall(ICommandSender sender, string[] args)
         {
-            plugin.jsonObject = JArray.Parse(File.ReadAllText(FileManager.AppFolder + "personal-items.json"));
-            return new string[] { "Personal-Items JSON config has been reloaded." };
+            plugin.jsonObject = JArray.Parse(File.ReadAllText(FileManager.AppFolder + "Personal-items/config.json "));
+            return new string[] { "Personal-Items has been reloaded." };
         }
     }
 
@@ -101,8 +107,9 @@ namespace PersonalItems
 
         public void OnSpawn(PlayerSpawnEvent ev)
         {
-            if(!plugin.spawning)
+            if(!plugin.spawning.Contains(ev.Player.SteamId))
             {
+                plugin.spawning.Add(ev.Player.SteamId);
                 Thread messageThread = new Thread(new ThreadStart(() => new DelayedItemGiver(plugin, ev.Player)));
                 messageThread.Start();
             }
@@ -113,7 +120,6 @@ namespace PersonalItems
     {
         public DelayedItemGiver(PersonalItems plugin, Player player)
         {
-            plugin.spawning = true;
             Thread.Sleep(500);
             Random rnd = new Random();
             for (int i = 0; i < plugin.jsonObject.Count; i++)
@@ -135,7 +141,7 @@ namespace PersonalItems
                     }
                 }
             }
-            plugin.spawning = false;
+            plugin.spawning.Remove(player.SteamId);
         }
     }
 }
