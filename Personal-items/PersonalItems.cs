@@ -92,7 +92,7 @@ namespace PersonalItems
 
         public string[] OnCall(ICommandSender sender, string[] args)
         {
-            plugin.jsonObject = JArray.Parse(File.ReadAllText(FileManager.AppFolder + "Personal-items/config.json "));
+            plugin.jsonObject = JArray.Parse(File.ReadAllText(FileManager.AppFolder + "Personal-items/config.json"));
             return new string[] { "Personal-Items has been reloaded." };
         }
     }
