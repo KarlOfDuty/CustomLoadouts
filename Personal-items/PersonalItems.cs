@@ -124,27 +124,27 @@ namespace PersonalItems
             Random rnd = new Random();
             for (int i = 0; i < plugin.jsonObject.Count; i++)
             {
-                plugin.Info("Processing item " + i + ":");
+                //plugin.Info("Processing item " + i + ": Player rank: " + player.GetRankName());
                 if (string.Equals(plugin.jsonObject[i].SelectToken("rank").Value<string>(), player.GetRankName(), StringComparison.OrdinalIgnoreCase)
                 || string.Equals(plugin.jsonObject[i].SelectToken("rank").Value<string>(), "ALL", StringComparison.OrdinalIgnoreCase))
                 {
-                    plugin.Info("Role match.");
+                    //plugin.Info("Rank match.");
                     if (plugin.jsonObject[i].SelectToken("steamid").Value<string>() == player.SteamId 
                     || string.Equals(plugin.jsonObject[i].SelectToken("steamid").Value<string>(), "ALL", StringComparison.OrdinalIgnoreCase))
                     {
-                        plugin.Info("SteamID match.");
+                        //plugin.Info("SteamID match.");
                         if (string.Equals(plugin.jsonObject[i].SelectToken("class").Value<string>(), "ALL", StringComparison.OrdinalIgnoreCase)
                         || string.Equals(plugin.jsonObject[i].SelectToken("class").Value<string>(), player.TeamRole.Role.ToString(), StringComparison.OrdinalIgnoreCase))
                         {
-                            plugin.Info("Class match.");
+                            //plugin.Info("Class match.");
                             if (rnd.Next(1, 100) <= plugin.jsonObject[i].SelectToken("chance").Value<int>())
                             {
-                                plugin.Info("Random chance success.");
+                                //plugin.Info("Random chance success.");
                                 player.GiveItem((ItemType)Enum.Parse(typeof(ItemType), plugin.jsonObject[i].SelectToken("item").Value<string>()));
                             }
                             else
                             {
-                                plugin.Info("Random chance failed.");
+                                //plugin.Info("Random chance failed.");
                             }
                         }
                     }
