@@ -13,14 +13,14 @@ Default config:
 ```json
 [
     {
-        "role": "all",
+        "rank": "all",
         "steamid": "76561198022373616",
         "class": "all",
         "item": "COIN",
         "chance": "50"
     },
     {
-        "role": "donator",
+        "rank": "donator",
         "steamid": "all",
         "class": "CLASSD",
         "item": "CUP",
