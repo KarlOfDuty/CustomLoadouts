@@ -19,10 +19,10 @@ namespace PersonalItems
         name = "Personal-items",
         description = "Gives specific players items on spawn.",
         id = "karlofduty.personal-items",
-        version = "1.2.0",
+        version = "1.2.2",
         SmodMajor = 3,
         SmodMinor = 1,
-        SmodRevision = 19
+        SmodRevision = 21
     )]
     public class PersonalItems : Plugin
     {
@@ -59,16 +59,16 @@ namespace PersonalItems
 
         public override void OnEnable()
         {
-            if (!Directory.Exists(FileManager.AppFolder + "Personal-items"))
+            if (!Directory.Exists(FileManager.GetAppFolder() + "Personal-items"))
             {
-                Directory.CreateDirectory(FileManager.AppFolder + "Personal-items");
+                Directory.CreateDirectory(FileManager.GetAppFolder() + "Personal-items");
             }
 
-            if (!File.Exists(FileManager.AppFolder + "Personal-items/config.json"))
+            if (!File.Exists(FileManager.GetAppFolder() + "Personal-items/config.json"))
             {
-                File.WriteAllText(FileManager.AppFolder + "Personal-items/config.json", defaultConfig);
+                File.WriteAllText(FileManager.GetAppFolder() + "Personal-items/config.json", defaultConfig);
             }
-            jsonObject = JArray.Parse(File.ReadAllText(FileManager.AppFolder + "Personal-items/config.json"));
+            jsonObject = JArray.Parse(File.ReadAllText(FileManager.GetAppFolder() + "Personal-items/config.json"));
             this.Info("Personal-Items enabled.");
         }
     }
@@ -92,7 +92,7 @@ namespace PersonalItems
 
         public string[] OnCall(ICommandSender sender, string[] args)
         {
-            plugin.jsonObject = JArray.Parse(File.ReadAllText(FileManager.AppFolder + "Personal-items/config.json"));
+            plugin.jsonObject = JArray.Parse(File.ReadAllText(FileManager.GetAppFolder() + "Personal-items/config.json"));
             return new string[] { "Personal-Items has been reloaded." };
         }
     }
@@ -115,7 +115,7 @@ namespace PersonalItems
             }
         }
     }
-
+    
     class DelayedItemGiver
     {
         public DelayedItemGiver(PersonalItems plugin, Player player)
