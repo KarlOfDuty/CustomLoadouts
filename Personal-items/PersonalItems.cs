@@ -11,7 +11,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using YamlDotNet.Serialization;
 
@@ -113,21 +112,48 @@ namespace PersonalItems
                             // Gives all items in the item bundle to the player
                             foreach (string itemName in itemGroup.Value as JArray)
                             {
-                                try
+                                if (itemName == "REMOVEALL")
                                 {
-                                    // Parses the string into the enumerable value
-                                    player.GiveItem((ItemType)Enum.Parse(typeof(ItemType), itemName));
-                                    if (verbose)
+                                    // Deletes the existing items if set in the config
+                                    try
                                     {
-                                        this.Info(player.TeamRole.Role + " " + player.Name + "(" + player.SteamId + ") was given item " + itemName + ".");
+                                        foreach (Smod2.API.Item item in player.GetInventory())
+                                        {
+                                            item.Remove();
+                                        }
+
+                                        if (verbose)
+                                        {
+                                            this.Info("Cleared inventory of " + player.TeamRole.Role + " " + player.Name + "(" + player.SteamId + ").");
+                                        }
+                                    }
+                                    catch (Exception e)
+                                    {
+                                        this.Error("Error occured while resetting inventory of " + player + ".");
+                                        if (debug)
+                                        {
+                                            this.Error(e.ToString());
+                                        }
                                     }
                                 }
-                                catch (Exception e)
+                                else
                                 {
-                                    this.Error("Error occured while giving item \"" + itemName + "\" to " + player + ".");
-                                    if(debug)
+                                    // Parses the string into the enumerable value
+                                    try
                                     {
-                                        this.Error(e.ToString());
+                                        player.GiveItem((ItemType)Enum.Parse(typeof(ItemType), itemName));
+                                        if (verbose)
+                                        {
+                                            this.Info(player.TeamRole.Role + " " + player.Name + "(" + player.SteamId + ") was given item " + itemName + ".");
+                                        }
+                                    }
+                                    catch (Exception e)
+                                    {
+                                        this.Error("Error occured while giving item \"" + itemName + "\" to " + player + ".");
+                                        if (debug)
+                                        {
+                                            this.Error(e.ToString());
+                                        }
                                     }
                                 }
                             }
@@ -145,16 +171,16 @@ namespace PersonalItems
                 return;
             }
 
-            // Checks if the player fits the filter from the config
-            if (currentNode.SelectToken(nodesToCheck.First()) != null)
-            {
-                TryGiveItems(currentNode[nodesToCheck.First()], nodesToCheck.Skip(1), player);
-            }
-
             // Lets all players into open fields from the config
             if (currentNode.SelectToken("all") != null)
             {
                 TryGiveItems(currentNode["all"], nodesToCheck.Skip(1), player);
+            }
+
+            // Checks if the player fits the filter from the config
+            if (currentNode.SelectToken(nodesToCheck.First()) != null)
+            {
+                TryGiveItems(currentNode[nodesToCheck.First()], nodesToCheck.Skip(1), player);
             }
         }
     }
@@ -199,7 +225,7 @@ namespace PersonalItems
             if (!plugin.spawning.Contains(ev.Player.SteamId))
             {
                 plugin.spawning.Add(ev.Player.SteamId);
-                new Task(async () => 
+                new Task(async () =>
                 {
                     await Task.Delay(1000);
                     plugin.TryGiveItems(plugin.config, new List<string> { ev.Player.SteamId, ev.Player.GetRankName(), ev.Player.TeamRole.Role.ToString() }, ev.Player);

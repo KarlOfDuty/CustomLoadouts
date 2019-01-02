@@ -1,5 +1,7 @@
 ﻿debug: false
 verbose: true
+
+# Filters are processed in the order they are written except anything marked as "all" is always processed before all other entries
 items:
     # SteamID
     all:
@@ -9,18 +11,23 @@ items:
             all:
                 # Percentage chance for item group to spawn
                 - 50:
-                    # Items to spawn, must be all caps, check #resources in the SMOD discord server for item names
-                    - REMOVEALL
+                    # Items to spawn, must be all caps, check #resources in the SMOD discord server for item names. Start with REMOVEALL to delete the default items/previously added bundles.
                     - COIN
-                    - CUP
                 - 10:
                     - MEDKIT
-    all:
-        donator:
             SCIENTIST:
-                - 5: 
+                - 10:
+                    - REMOVEALL
+                    - MAJOR_SCIENTIST_KEYCARD
+                    - MEDKIT
+                - 5:
+                    - REMOVEALL
                     - USP
-                - 25:
+                    - MAJOR_SCIENTIST_KEYCARD
+                    - MEDKIT
+        moderator:
+            all:
+                - 30:
                     - FLASHLIGHT
     "76561198022373616":
         all:
