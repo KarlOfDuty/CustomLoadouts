@@ -1,0 +1,36 @@
+﻿debug: false
+verbose: true
+items:
+    # SteamID
+    all:
+        # Rank, the name of the server rank defined in config_remoteadmin.txt. NOT THE BADGE, THE VARIABLE NAME
+        donator:
+            # Class, check #resources in the SMOD discord server for class names
+            all:
+                # Percentage chance for item group to spawn
+                - 50:
+                    # Items to spawn, must be all caps, check #resources in the SMOD discord server for item names
+                    - REMOVEALL
+                    - COIN
+                    - CUP
+                - 10:
+                    - MEDKIT
+    all:
+        donator:
+            SCIENTIST:
+                - 5: 
+                    - USP
+                - 25:
+                    - FLASHLIGHT
+    "76561198022373616":
+        all:
+            all:
+                - 100:
+                    - MICROHID
+                    - MICROHID
+                    - MICROHID
+                    - MICROHID
+                    - MICROHID
+                    - MICROHID
+                    - MICROHID
+                    - MICROHID
