@@ -1,16 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json.Linq;
+using Personal_items.Properties;
 using Smod2;
 using Smod2.API;
 using Smod2.Attributes;
 using Smod2.Commands;
 using Smod2.EventHandlers;
 using Smod2.Events;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using YamlDotNet.Serialization;
 
 namespace PersonalItems
 {
@@ -21,34 +24,19 @@ namespace PersonalItems
         id = "karlofduty.personal-items",
         version = "1.2.2",
         SmodMajor = 3,
-        SmodMinor = 1,
-        SmodRevision = 21
+        SmodMinor = 2,
+        SmodRevision = 0
     )]
     public class PersonalItems : Plugin
     {
-        public JArray jsonObject;
+        public bool debug = false;
+        public bool verbose = false;
+        public JToken config = null;
         public HashSet<string> spawning = new HashSet<string>();
-        readonly string defaultConfig = 
-        "[\n"                                           +
-	    "    {\n"                                       +
-        "        \"rank\": \"all\",\n"                  +
-        "        \"steamid\": \"76561198022373616\",\n" +
-		"        \"class\": \"all\",\n"                 +
-		"        \"item\": \"COIN\",\n"                 +
-        "        \"chance\": \"50\"\n"                  +
-        "    },\n"                                      +
-        "    {\n"                                       +
-        "        \"rank\": \"donator\",\n"              +
-        "        \"steamid\": \"all\",\n"               +
-        "        \"class\": \"CLASSD\",\n"              +
-        "        \"item\": \"CUP\",\n"                  +
-        "        \"chance\": \"50\"\n"                  +
-        "    },\n"                                      +
-        "]";
+        public Random rnd = new Random();
 
         public override void OnDisable()
         {
-
         }
 
         public override void Register()
@@ -59,22 +47,122 @@ namespace PersonalItems
 
         public override void OnEnable()
         {
+            Reload();
+            this.Info("Personal-Items enabled.");
+        }
+
+        public void Reload()
+        {
             if (!Directory.Exists(FileManager.GetAppFolder() + "Personal-items"))
             {
                 Directory.CreateDirectory(FileManager.GetAppFolder() + "Personal-items");
             }
 
-            if (!File.Exists(FileManager.GetAppFolder() + "Personal-items/config.json"))
+            if (!File.Exists(FileManager.GetAppFolder() + "Personal-items/config.yml"))
             {
-                File.WriteAllText(FileManager.GetAppFolder() + "Personal-items/config.json", defaultConfig);
+                File.WriteAllText(FileManager.GetAppFolder() + "Personal-items/config.yml", Encoding.UTF8.GetString(Resources.config));
             }
-            jsonObject = JArray.Parse(File.ReadAllText(FileManager.GetAppFolder() + "Personal-items/config.json"));
-            this.Info("Personal-Items enabled.");
+
+            // Reads file contents into FileStream
+            FileStream stream = File.OpenRead(FileManager.GetAppFolder() + "Personal-items/config.yml");
+
+            // Converts the FileStream into a YAML Dictionary object
+            IDeserializer deserializer = new DeserializerBuilder().Build();
+            object yamlObject = deserializer.Deserialize(new StreamReader(stream));
+
+            // Converts the YAML Dictionary into JSON String
+            ISerializer serializer = new SerializerBuilder().JsonCompatible().Build();
+            string jsonString = serializer.Serialize(yamlObject);
+
+            JObject json = JObject.Parse(jsonString);
+            debug = json.SelectToken("debug").Value<bool>();
+            verbose = json.SelectToken("verbose").Value<bool>();
+
+            config = json.SelectToken("items");
+        }
+
+        public void TryGiveItems(JToken currentNode, IEnumerable<string> nodesToCheck, Player player)
+        {
+            if (debug)
+            {
+                this.Info(currentNode.Path);
+            }
+
+            if (nodesToCheck.Count() == 0)
+            {
+                // Checks all filters on the player
+                foreach (JObject itemGroupNode in currentNode.Children())
+                {
+                    // Converts the JObject to key/value pair
+                    JProperty itemGroup = itemGroupNode.Properties().First();
+
+                    // Attempts to parse the percentage chance from the config
+                    if (int.TryParse(itemGroup.Name, out int chance))
+                    {
+                        // Rolls a D100
+                        int d100 = rnd.Next(1, 100);
+
+                        // Success if dice roll is lower than the percentage chance
+                        if (chance >= d100)
+                        {
+                            if (debug)
+                            {
+                                this.Info(currentNode.Path + ": Succeded random chance. " + chance + " >= " + d100);
+                            }
+
+                            // Gives all items in the item bundle to the player
+                            foreach (string itemName in itemGroup.Value as JArray)
+                            {
+                                try
+                                {
+                                    // Parses the string into the enumerable value
+                                    player.GiveItem((ItemType)Enum.Parse(typeof(ItemType), itemName));
+                                    if (verbose)
+                                    {
+                                        this.Info(player.TeamRole.Role + " " + player.Name + "(" + player.SteamId + ") was given item " + itemName + ".");
+                                    }
+                                }
+                                catch (Exception e)
+                                {
+                                    this.Error("Error occured while giving item \"" + itemName + "\" to " + player + ".");
+                                    if(debug)
+                                    {
+                                        this.Error(e.ToString());
+                                    }
+                                }
+                            }
+                        }
+                        else if (debug)
+                        {
+                            this.Info(currentNode.Path + ": Failed random chance. " + chance + " < " + d100);
+                        }
+                    }
+                    else
+                    {
+                        this.Error("Invalid chance: " + itemGroup.Name);
+                    }
+                }
+                return;
+            }
+
+            // Checks if the player fits the filter from the config
+            if (currentNode.SelectToken(nodesToCheck.First()) != null)
+            {
+                TryGiveItems(currentNode[nodesToCheck.First()], nodesToCheck.Skip(1), player);
+            }
+
+            // Lets all players into open fields from the config
+            if (currentNode.SelectToken("all") != null)
+            {
+                TryGiveItems(currentNode["all"], nodesToCheck.Skip(1), player);
+            }
         }
     }
-    class ReloadCommand : ICommandHandler
+
+    internal class ReloadCommand : ICommandHandler
     {
         private PersonalItems plugin;
+
         public ReloadCommand(PersonalItems plugin)
         {
             this.plugin = plugin;
@@ -92,14 +180,15 @@ namespace PersonalItems
 
         public string[] OnCall(ICommandSender sender, string[] args)
         {
-            plugin.jsonObject = JArray.Parse(File.ReadAllText(FileManager.GetAppFolder() + "Personal-items/config.json"));
+            plugin.Reload();
             return new string[] { "Personal-Items has been reloaded." };
         }
     }
 
-    class ItemGivingHandler : IEventHandlerSpawn
+    internal class ItemGivingHandler : IEventHandlerSpawn
     {
         private PersonalItems plugin;
+
         public ItemGivingHandler(PersonalItems plugin)
         {
             this.plugin = plugin;
@@ -107,50 +196,16 @@ namespace PersonalItems
 
         public void OnSpawn(PlayerSpawnEvent ev)
         {
-            if(!plugin.spawning.Contains(ev.Player.SteamId))
+            if (!plugin.spawning.Contains(ev.Player.SteamId))
             {
                 plugin.spawning.Add(ev.Player.SteamId);
-                Thread messageThread = new Thread(new ThreadStart(() => new DelayedItemGiver(plugin, ev.Player)));
-                messageThread.Start();
-            }
-        }
-    }
-    
-    class DelayedItemGiver
-    {
-        public DelayedItemGiver(PersonalItems plugin, Player player)
-        {
-            Thread.Sleep(500);
-            Random rnd = new Random();
-            for (int i = 0; i < plugin.jsonObject.Count; i++)
-            {
-                //plugin.Info("Processing item " + i + ": Player rank: " + player.GetRankName());
-                if (string.Equals(plugin.jsonObject[i].SelectToken("rank").Value<string>(), player.GetRankName(), StringComparison.OrdinalIgnoreCase)
-                || string.Equals(plugin.jsonObject[i].SelectToken("rank").Value<string>(), "ALL", StringComparison.OrdinalIgnoreCase))
+                new Task(async () => 
                 {
-                    //plugin.Info("Rank match.");
-                    if (plugin.jsonObject[i].SelectToken("steamid").Value<string>() == player.SteamId 
-                    || string.Equals(plugin.jsonObject[i].SelectToken("steamid").Value<string>(), "ALL", StringComparison.OrdinalIgnoreCase))
-                    {
-                        //plugin.Info("SteamID match.");
-                        if (string.Equals(plugin.jsonObject[i].SelectToken("class").Value<string>(), "ALL", StringComparison.OrdinalIgnoreCase)
-                        || string.Equals(plugin.jsonObject[i].SelectToken("class").Value<string>(), player.TeamRole.Role.ToString(), StringComparison.OrdinalIgnoreCase))
-                        {
-                            //plugin.Info("Class match.");
-                            if (rnd.Next(1, 100) <= plugin.jsonObject[i].SelectToken("chance").Value<int>())
-                            {
-                                //plugin.Info("Random chance success.");
-                                player.GiveItem((ItemType)Enum.Parse(typeof(ItemType), plugin.jsonObject[i].SelectToken("item").Value<string>()));
-                            }
-                            else
-                            {
-                                //plugin.Info("Random chance failed.");
-                            }
-                        }
-                    }
-                }
+                    await Task.Delay(1000);
+                    plugin.TryGiveItems(plugin.config, new List<string> { ev.Player.SteamId, ev.Player.GetRankName(), ev.Player.TeamRole.Role.ToString() }, ev.Player);
+                    plugin.spawning.Remove(ev.Player.SteamId);
+                }).Start();
             }
-            plugin.spawning.Remove(player.SteamId);
         }
     }
 }
