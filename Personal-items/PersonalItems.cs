@@ -28,14 +28,15 @@ namespace PersonalItems
     )]
     public class PersonalItems : Plugin
     {
-        public JToken config = null;
-        public bool debug = false;
-        public Random rnd = new Random();
-        public HashSet<string> spawning = new HashSet<string>();
-        public bool verbose = false;
+        internal JToken config;
+        private bool debug;
+        internal Random rnd = new Random();
+        internal HashSet<string> spawning = new HashSet<string>();
+        private bool verbose;
 
         public override void OnDisable()
         {
+            // It's ya boi, useless function
         }
 
         public override void OnEnable()
