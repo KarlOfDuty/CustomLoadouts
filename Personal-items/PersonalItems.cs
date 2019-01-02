@@ -21,33 +21,40 @@ namespace PersonalItems
         name = "Personal-items",
         description = "Gives specific players items on spawn.",
         id = "karlofduty.personal-items",
-        version = "1.2.2",
+        version = "2.0.0",
         SmodMajor = 3,
         SmodMinor = 2,
         SmodRevision = 0
     )]
     public class PersonalItems : Plugin
     {
-        public bool debug = false;
-        public bool verbose = false;
         public JToken config = null;
-        public HashSet<string> spawning = new HashSet<string>();
+        public bool debug = false;
         public Random rnd = new Random();
+        public HashSet<string> spawning = new HashSet<string>();
+        public bool verbose = false;
 
         public override void OnDisable()
         {
+        }
+
+        public override void OnEnable()
+        {
+            new Task(async () =>
+            {
+                await Task.Delay(4000);
+                this.Info("Loading config " + GetConfigString("pi_config") + "...");
+                Reload();
+                this.Info("Config loaded.");
+                this.Info("Personal-Items enabled.");
+            }).Start();
         }
 
         public override void Register()
         {
             this.AddEventHandlers(new ItemGivingHandler(this), Priority.High);
             this.AddCommand("pi_reload", new ReloadCommand(this));
-        }
-
-        public override void OnEnable()
-        {
-            Reload();
-            this.Info("Personal-Items enabled.");
+            this.AddConfig(new Smod2.Config.ConfigSetting("pi_config", "config.yml", Smod2.Config.SettingType.STRING, true, "Name of the config file to use, by default 'config.yml'"));
         }
 
         public void Reload()
@@ -57,13 +64,13 @@ namespace PersonalItems
                 Directory.CreateDirectory(FileManager.GetAppFolder() + "Personal-items");
             }
 
-            if (!File.Exists(FileManager.GetAppFolder() + "Personal-items/config.yml"))
+            if (!File.Exists(FileManager.GetAppFolder() + "Personal-items/" + GetConfigString("pi_config")))
             {
-                File.WriteAllText(FileManager.GetAppFolder() + "Personal-items/config.yml", Encoding.UTF8.GetString(Resources.config));
+                File.WriteAllText(FileManager.GetAppFolder() + "Personal-items/" + GetConfigString("pi_config"), Encoding.UTF8.GetString(Resources.config));
             }
 
             // Reads file contents into FileStream
-            FileStream stream = File.OpenRead(FileManager.GetAppFolder() + "Personal-items/config.yml");
+            FileStream stream = File.OpenRead(FileManager.GetAppFolder() + "Personal-items/" + GetConfigString("pi_config"));
 
             // Converts the FileStream into a YAML Dictionary object
             IDeserializer deserializer = new DeserializerBuilder().Build();
@@ -74,6 +81,8 @@ namespace PersonalItems
             string jsonString = serializer.Serialize(yamlObject);
 
             JObject json = JObject.Parse(jsonString);
+
+            // Sets config variables
             debug = json.SelectToken("debug").Value<bool>();
             verbose = json.SelectToken("verbose").Value<bool>();
 
@@ -112,49 +121,134 @@ namespace PersonalItems
                             // Gives all items in the item bundle to the player
                             foreach (string itemName in itemGroup.Value as JArray)
                             {
-                                if (itemName == "REMOVEALL")
+                                switch (itemName)
                                 {
-                                    // Deletes the existing items if set in the config
-                                    try
-                                    {
-                                        foreach (Smod2.API.Item item in player.GetInventory())
+                                    case "REMOVEAMMO":
+                                        // Deletes the existing ammo if set in the config
+                                        try
                                         {
-                                            item.Remove();
-                                        }
+                                            player.SetAmmo(AmmoType.DROPPED_5, 0);
+                                            player.SetAmmo(AmmoType.DROPPED_7, 0);
+                                            player.SetAmmo(AmmoType.DROPPED_9, 0);
 
-                                        if (verbose)
-                                        {
-                                            this.Info("Cleared inventory of " + player.TeamRole.Role + " " + player.Name + "(" + player.SteamId + ").");
+                                            if (verbose)
+                                            {
+                                                this.Info("Cleared ammo of " + player.TeamRole.Role + " " + player.Name + "(" + player.SteamId + ").");
+                                            }
                                         }
-                                    }
-                                    catch (Exception e)
-                                    {
-                                        this.Error("Error occured while resetting inventory of " + player + ".");
-                                        if (debug)
+                                        catch (Exception e)
                                         {
-                                            this.Error(e.ToString());
+                                            this.Error("Error occured while resetting ammo of " + player + ".");
+                                            if (debug)
+                                            {
+                                                this.Error(e.ToString());
+                                            }
                                         }
-                                    }
-                                }
-                                else
-                                {
-                                    // Parses the string into the enumerable value
-                                    try
-                                    {
-                                        player.GiveItem((ItemType)Enum.Parse(typeof(ItemType), itemName));
-                                        if (verbose)
+                                        break;
+
+                                    case "REMOVEITEMS":
+                                        // Deletes the existing items if set in the config
+                                        try
                                         {
-                                            this.Info(player.TeamRole.Role + " " + player.Name + "(" + player.SteamId + ") was given item " + itemName + ".");
+                                            foreach (Smod2.API.Item item in player.GetInventory())
+                                            {
+                                                item.Remove();
+                                            }
+
+                                            if (verbose)
+                                            {
+                                                this.Info("Cleared inventory of " + player.TeamRole.Role + " " + player.Name + "(" + player.SteamId + ").");
+                                            }
                                         }
-                                    }
-                                    catch (Exception e)
-                                    {
-                                        this.Error("Error occured while giving item \"" + itemName + "\" to " + player + ".");
-                                        if (debug)
+                                        catch (Exception e)
                                         {
-                                            this.Error(e.ToString());
+                                            this.Error("Error occured while resetting inventory of " + player + ".");
+                                            if (debug)
+                                            {
+                                                this.Error(e.ToString());
+                                            }
                                         }
-                                    }
+                                        break;
+
+                                    case "DROPPED_5":
+                                        // Gives a mag of 5.56mm ammo
+                                        try
+                                        {
+                                            player.SetAmmo(AmmoType.DROPPED_5, player.GetAmmo(AmmoType.DROPPED_5) + 25);
+                                            if (verbose)
+                                            {
+                                                this.Info(player.TeamRole.Role + " " + player.Name + "(" + player.SteamId + ") was given a mag of 5.56mm ammo (25 shots).");
+                                            }
+                                        }
+                                        catch (Exception e)
+                                        {
+                                            this.Error("Error occured while giving a mag of 5.56mm ammo to " + player + ".");
+                                            if (debug)
+                                            {
+                                                this.Error(e.ToString());
+                                            }
+                                        }
+                                        break;
+
+                                    case "DROPPED_7":
+                                        // Gives a mag of 7.62mm ammo
+                                        try
+                                        {
+                                            player.SetAmmo(AmmoType.DROPPED_7, player.GetAmmo(AmmoType.DROPPED_7) + 35);
+                                            if (verbose)
+                                            {
+                                                this.Info(player.TeamRole.Role + " " + player.Name + "(" + player.SteamId + ") was given a mag of 7.62mm ammo (35 shots).");
+                                            }
+                                        }
+                                        catch (Exception e)
+                                        {
+                                            this.Error("Error occured while giving a mag of 7.62mm ammo to " + player + ".");
+                                            if (debug)
+                                            {
+                                                this.Error(e.ToString());
+                                            }
+                                        }
+                                        break;
+
+                                    case "DROPPED_9":
+                                        // Gives a clip of 9mm ammo
+                                        try
+                                        {
+                                            player.SetAmmo(AmmoType.DROPPED_9, player.GetAmmo(AmmoType.DROPPED_9) + 15);
+                                            if (verbose)
+                                            {
+                                                this.Info(player.TeamRole.Role + " " + player.Name + "(" + player.SteamId + ") was given a clip of 9mm ammo (15 shots).");
+                                            }
+                                        }
+                                        catch (Exception e)
+                                        {
+                                            this.Error("Error occured while giving a clip of 9mm ammo to " + player + ".");
+                                            if (debug)
+                                            {
+                                                this.Error(e.ToString());
+                                            }
+                                        }
+                                        break;
+
+                                    default:
+                                        // Parses the string to the enumerable itemtype
+                                        try
+                                        {
+                                            player.GiveItem((ItemType)Enum.Parse(typeof(ItemType), itemName));
+                                            if (verbose)
+                                            {
+                                                this.Info(player.TeamRole.Role + " " + player.Name + "(" + player.SteamId + ") was given item " + itemName + ".");
+                                            }
+                                        }
+                                        catch (Exception e)
+                                        {
+                                            this.Error("Error occured while giving item \"" + itemName + "\" to " + player + ".");
+                                            if (debug)
+                                            {
+                                                this.Error(e.ToString());
+                                            }
+                                        }
+                                        break;
                                 }
                             }
                         }
@@ -185,6 +279,31 @@ namespace PersonalItems
         }
     }
 
+    internal class ItemGivingHandler : IEventHandlerSpawn
+    {
+        private PersonalItems plugin;
+
+        public ItemGivingHandler(PersonalItems plugin)
+        {
+            this.plugin = plugin;
+        }
+
+        public void OnSpawn(PlayerSpawnEvent ev)
+        {
+            // Only runs if not already running
+            if (!plugin.spawning.Contains(ev.Player.SteamId))
+            {
+                plugin.spawning.Add(ev.Player.SteamId);
+                new Task(async () =>
+                {
+                    await Task.Delay(1000);
+                    plugin.TryGiveItems(plugin.config, new List<string> { ev.Player.SteamId, ev.Player.GetRankName(), ev.Player.TeamRole.Role.ToString() }, ev.Player);
+                    plugin.spawning.Remove(ev.Player.SteamId);
+                }).Start();
+            }
+        }
+    }
+
     internal class ReloadCommand : ICommandHandler
     {
         private PersonalItems plugin;
@@ -208,30 +327,6 @@ namespace PersonalItems
         {
             plugin.Reload();
             return new string[] { "Personal-Items has been reloaded." };
-        }
-    }
-
-    internal class ItemGivingHandler : IEventHandlerSpawn
-    {
-        private PersonalItems plugin;
-
-        public ItemGivingHandler(PersonalItems plugin)
-        {
-            this.plugin = plugin;
-        }
-
-        public void OnSpawn(PlayerSpawnEvent ev)
-        {
-            if (!plugin.spawning.Contains(ev.Player.SteamId))
-            {
-                plugin.spawning.Add(ev.Player.SteamId);
-                new Task(async () =>
-                {
-                    await Task.Delay(1000);
-                    plugin.TryGiveItems(plugin.config, new List<string> { ev.Player.SteamId, ev.Player.GetRankName(), ev.Player.TeamRole.Role.ToString() }, ev.Player);
-                    plugin.spawning.Remove(ev.Player.SteamId);
-                }).Start();
-            }
         }
     }
 }
