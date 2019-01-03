@@ -9,6 +9,8 @@ Extract the release zip and place the contents in sm_plugins
 
 This plugin has it's own config which is placed in your global config folder when the plugin is run for the first time.
 
+The plugin only has one option in the server config, `pi_config`, which can be used to change which plugin config to use, default value is `config.yml`.
+
 Default config:
 ```yaml
 debug: false
