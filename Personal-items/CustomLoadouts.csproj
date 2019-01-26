@@ -7,8 +7,8 @@
     <ProjectGuid>{82D2711F-F41D-4F81-8AD7-5CD59578C54E}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Personal_items</RootNamespace>
-    <AssemblyName>Personal-items</AssemblyName>
+    <RootNamespace>CustomLoadouts</RootNamespace>
+    <AssemblyName>CustomLoadouts</AssemblyName>
     <TargetFrameworkVersion>v4.7.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
@@ -58,7 +58,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="PersonalItems.cs" />
+    <Compile Include="CustomLoadouts.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -80,7 +80,7 @@
   <PropertyGroup>
     <PostBuildEvent>taskkill /F /IM SCPSL.exe /T 2&gt;nul &amp;set errorlevel=0
 cd $(ProjectDir)
-copy /y bin\Personal-items.dll ..\..\..\scpserver\sm_plugins\
+copy /y bin\CustomLoadouts.dll ..\..\..\scpserver\sm_plugins\
 mkdir ..\..\..\scpserver\sm_plugins\dependencies
 copy /y bin\YamlDotNet.dll ..\..\..\scpserver\sm_plugins\dependencies\</PostBuildEvent>
   </PropertyGroup>

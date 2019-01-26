@@ -1,5 +1,5 @@
-﻿using Newtonsoft.Json.Linq;
-using Personal_items.Properties;
+﻿using CustomLoadouts.Properties;
+using Newtonsoft.Json.Linq;
 using Smod2;
 using Smod2.API;
 using Smod2.Attributes;
