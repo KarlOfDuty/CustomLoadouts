@@ -1,15 +1,15 @@
-# PersonalItems
-An smod plugin similar to default-item but for specific players instead of classes.
+# CustomLoadouts
+An smod plugin which gives out custom items and ammo amounts to classes on spawn, with configurable random chance and 
 
 ## Installation
 
-Extract the release zip and place the contents in sm_plugins
+Extract the release zip and place the contents in sm_plugins.
 
 ## Config
 
 This plugin has it's own config which is placed in your global config folder when the plugin is run for the first time.
 
-The plugin only has one option in the server config, `pi_config`, which can be used to change which plugin config to use, default value is `config.yml`.
+The plugin only has one option in the server config, `cl_config`, which can be used to change which plugin config to use, default value is `config.yml`.
 
 Default config:
 ```yaml
@@ -63,8 +63,8 @@ items:
                     - MICROHID
 ```
 
-You can add more entries by following the example above. I believe each config option is pretty self explanatory especially with the example above. The role, steamid and class can all be replaced with all. If you have any questions, you can ask them in my discord server at the link above.
+You can add more entries by following the example above. I believe each config option is pretty self explanatory with the example above. The role, steamid and class can all be replaced with `all`. If you have any questions, you can ask them in my discord server at the link above.
 
 ## Command
 
-`pi_reload` - Reloads the pi config.
+`cl_reload` - Reloads the cl config.
