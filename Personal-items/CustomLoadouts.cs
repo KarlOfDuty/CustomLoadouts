@@ -18,15 +18,15 @@ namespace PersonalItems
 {
     [PluginDetails(
         author = "Karl Essinger",
-        name = "Personal-items",
+        name = "CustomLoadouts",
         description = "Gives specific players items on spawn.",
-        id = "karlofduty.personal-items",
+        id = "karlofduty.CustomLoadouts",
         version = "2.0.0",
         SmodMajor = 3,
         SmodMinor = 2,
-        SmodRevision = 0
+        SmodRevision = 2
     )]
-    public class PersonalItems : Plugin
+    public class CustomLoadouts : Plugin
     {
         internal JToken config;
         private bool debug;
@@ -44,34 +44,34 @@ namespace PersonalItems
             new Task(async () =>
             {
                 await Task.Delay(4000);
-                this.Info("Loading config " + GetConfigString("pi_config") + "...");
+                this.Info("Loading config " + GetConfigString("cl_config") + "...");
                 Reload();
                 this.Info("Config loaded.");
-                this.Info("Personal-Items enabled.");
+                this.Info("CustomLoadouts enabled.");
             }).Start();
         }
 
         public override void Register()
         {
             this.AddEventHandlers(new ItemGivingHandler(this), Priority.High);
-            this.AddCommand("pi_reload", new ReloadCommand(this));
-            this.AddConfig(new Smod2.Config.ConfigSetting("pi_config", "config.yml", Smod2.Config.SettingType.STRING, true, "Name of the config file to use, by default 'config.yml'"));
+            this.AddCommand("cl_reload", new ReloadCommand(this));
+            this.AddConfig(new Smod2.Config.ConfigSetting("cl_config", "config.yml", Smod2.Config.SettingType.STRING, true, "Name of the config file to use, by default 'config.yml'"));
         }
 
         public void Reload()
         {
-            if (!Directory.Exists(FileManager.GetAppFolder() + "Personal-items"))
+            if (!Directory.Exists(FileManager.GetAppFolder() + "CustomLoadouts"))
             {
-                Directory.CreateDirectory(FileManager.GetAppFolder() + "Personal-items");
+                Directory.CreateDirectory(FileManager.GetAppFolder() + "CustomLoadouts");
             }
 
-            if (!File.Exists(FileManager.GetAppFolder() + "Personal-items/" + GetConfigString("pi_config")))
+            if (!File.Exists(FileManager.GetAppFolder() + "CustomLoadouts/" + GetConfigString("cl_config")))
             {
-                File.WriteAllText(FileManager.GetAppFolder() + "Personal-items/" + GetConfigString("pi_config"), Encoding.UTF8.GetString(Resources.config));
+                File.WriteAllText(FileManager.GetAppFolder() + "CustomLoadouts/" + GetConfigString("cl_config"), Encoding.UTF8.GetString(Resources.config));
             }
 
             // Reads file contents into FileStream
-            FileStream stream = File.OpenRead(FileManager.GetAppFolder() + "Personal-items/" + GetConfigString("pi_config"));
+            FileStream stream = File.OpenRead(FileManager.GetAppFolder() + "CustomLoadouts/" + GetConfigString("cl_config"));
 
             // Converts the FileStream into a YAML Dictionary object
             IDeserializer deserializer = new DeserializerBuilder().Build();
@@ -282,9 +282,9 @@ namespace PersonalItems
 
     internal class ItemGivingHandler : IEventHandlerSpawn
     {
-        private PersonalItems plugin;
+        private CustomLoadouts plugin;
 
-        public ItemGivingHandler(PersonalItems plugin)
+        public ItemGivingHandler(CustomLoadouts plugin)
         {
             this.plugin = plugin;
         }
@@ -307,9 +307,9 @@ namespace PersonalItems
 
     internal class ReloadCommand : ICommandHandler
     {
-        private PersonalItems plugin;
+        private CustomLoadouts plugin;
 
-        public ReloadCommand(PersonalItems plugin)
+        public ReloadCommand(CustomLoadouts plugin)
         {
             this.plugin = plugin;
         }
@@ -321,13 +321,13 @@ namespace PersonalItems
 
         public string GetUsage()
         {
-            return "pi_reload";
+            return "cl_reload";
         }
 
         public string[] OnCall(ICommandSender sender, string[] args)
         {
             plugin.Reload();
-            return new string[] { "Personal-Items has been reloaded." };
+            return new string[] { "CustomLoadouts has been reloaded." };
         }
     }
 }
