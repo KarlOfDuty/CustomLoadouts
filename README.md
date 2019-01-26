@@ -1,5 +1,9 @@
 # CustomLoadouts
-An smod plugin which gives out custom items and ammo amounts to classes on spawn, with configurable random chance and 
+An smod plugin similar to default-item but much more customisable to specific players. Can give items based on steamid, class, server rank and random chance or any combination of these.
+
+Can also be used to set up special subclasses with customized loadouts with a customisable chance to get the loadout on spawn.
+
+IMPORTANT: Turn off smart class picker in smod or wrong items may be given to players as it changes their class on spawn.
 
 ## Installation
 
