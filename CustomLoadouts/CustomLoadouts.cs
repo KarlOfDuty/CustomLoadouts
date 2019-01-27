@@ -14,7 +14,7 @@ using System.Text;
 using System.Threading.Tasks;
 using YamlDotNet.Serialization;
 
-namespace PersonalItems
+namespace CustomLoadouts
 {
     [PluginDetails(
         author = "Karl Essinger",
@@ -33,6 +33,7 @@ namespace PersonalItems
         internal Random rnd = new Random();
         internal HashSet<string> spawning = new HashSet<string>();
         private bool verbose;
+        internal int delay = 1000;
 
         public override void OnDisable()
         {
@@ -86,6 +87,7 @@ namespace PersonalItems
             // Sets config variables
             debug = json.SelectToken("debug").Value<bool>();
             verbose = json.SelectToken("verbose").Value<bool>();
+            delay = json.SelectToken("delay").Value<int>();
 
             config = json.SelectToken("items");
         }
@@ -297,7 +299,7 @@ namespace PersonalItems
                 plugin.spawning.Add(ev.Player.SteamId);
                 new Task(async () =>
                 {
-                    await Task.Delay(1000);
+                    await Task.Delay(plugin.delay);
                     plugin.TryGiveItems(plugin.config, new List<string> { ev.Player.SteamId, ev.Player.GetRankName(), ev.Player.TeamRole.Role.ToString() }, ev.Player);
                     plugin.spawning.Remove(ev.Player.SteamId);
                 }).Start();

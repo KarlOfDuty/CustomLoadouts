@@ -1,5 +1,6 @@
 ﻿debug: false
 verbose: true
+delay: 1000
 
 # Filters are processed in the order they are written except anything marked as "all" is always processed before all other entries
 items:
