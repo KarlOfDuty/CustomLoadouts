@@ -1,4 +1,4 @@
-﻿using CustomLoadouts.Properties;
+using CustomLoadouts.Properties;
 using Newtonsoft.Json.Linq;
 using Smod2;
 using Smod2.API;
@@ -318,7 +318,7 @@ namespace CustomLoadouts
 
         public string GetCommandDescription()
         {
-            return "Reloads the JSON config of Personal-Items";
+            return "Reloads the config of CustomLoadouts";
         }
 
         public string GetUsage()
