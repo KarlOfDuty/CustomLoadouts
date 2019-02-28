@@ -115,10 +115,10 @@ namespace CustomLoadouts
                         JProperty itemGroup = itemGroupNode.Properties().First();
 
                         // Attempts to parse the percentage chance from the config
-                        if (int.TryParse(itemGroup.Name, out int chance))
+                        if (float.TryParse(itemGroup.Name, out float chance))
                         {
                             // Rolls a D100
-                            int d100 = rnd.Next(1, 100);
+                            float d100 = rnd.Next(1, 10000) / 100;
 
                             // Success if dice roll is lower than the percentage chance
                             if (chance >= d100)
