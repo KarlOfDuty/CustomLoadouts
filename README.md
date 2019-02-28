@@ -3,8 +3,6 @@ An smod plugin similar to default-item but much more customisable to specific pl
 
 Can also be used to set up special subclasses with customized loadouts with a customisable chance to get the loadout on spawn.
 
-IMPORTANT: Turn off smart class picker in smod or wrong items may be given to players as it changes their class on spawn.
-
 ## Installation
 
 Extract the release zip and place the contents in sm_plugins.
@@ -17,14 +15,18 @@ The plugin only has one option in the server config, `cl_config`, which can be u
 
 Default config:
 ```yaml
-debug: false
+# Prints a confirmation whenever a player is given a loadout
 verbose: true
+# Prints debug messages
+debug: false
+# Adds a ms delay if needed for plugin compatibility
+delay: 0
 
 # Filters are processed in the order they are written except anything marked as "all" is always processed before all other entries
 items:
     # SteamID
     all:
-        # Rank, the name of the server rank defined in config_remoteadmin.txt. NOT THE BADGE, THE VARIABLE NAME
+        # Rank, the name of the server rank defined in config_remoteadmin.txt. Set to none for only players without a rank.
         donator:
             # Class, check #resources in the SMOD discord server for class names
             all:
@@ -32,6 +34,7 @@ items:
                 - 50:
                     # Items to spawn, must be all caps, check #resources in the SMOD discord server for item names. You can start with REMOVEITEMS and REMOVEAMMO to delete the existing items/ammo.
                     # All weapons spawn with one mag/clip loaded which cannot be removed, giving ammo adds the ammo directly to the player instead of spawning it as an item in their inventory.
+                    # This example has a 50% chance to spawn a coin to all players with the rank donator
                     - COIN
                 - 10:
                     - MEDKIT
