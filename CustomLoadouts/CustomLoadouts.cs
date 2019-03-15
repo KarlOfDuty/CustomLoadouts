@@ -45,9 +45,7 @@ namespace CustomLoadouts
             new Task(async () =>
             {
                 await Task.Delay(4000);
-                this.Info("Loading config " + GetConfigString("cl_config") + "...");
                 Reload();
-                this.Info("Config loaded.");
                 this.Info("CustomLoadouts enabled.");
             }).Start();
         }
@@ -56,23 +54,24 @@ namespace CustomLoadouts
         {
             this.AddEventHandlers(new ItemGivingHandler(this), Priority.High);
             this.AddCommand("cl_reload", new ReloadCommand(this));
-            this.AddConfig(new Smod2.Config.ConfigSetting("cl_config", "config.yml", Smod2.Config.SettingType.STRING, true, "Name of the config file to use, by default 'config.yml'"));
-        }
+            this.AddConfig(new Smod2.Config.ConfigSetting("cl_config_global", true, Smod2.Config.SettingType.BOOL, true, "Whether or not to use the global config directory, default is true"));
+		}
 
         public void Reload()
         {
-            if (!Directory.Exists(FileManager.GetAppFolder() + "CustomLoadouts"))
+			this.Info("Loading config '" + FileManager.GetAppFolder(GetConfigBool("cl_config_global")) + "CustomLoadouts/config.yml'...");
+            if (!Directory.Exists(FileManager.GetAppFolder(GetConfigBool("cl_config_global")) + "CustomLoadouts"))
             {
-                Directory.CreateDirectory(FileManager.GetAppFolder() + "CustomLoadouts");
+                Directory.CreateDirectory(FileManager.GetAppFolder(GetConfigBool("cl_config_global")) + "CustomLoadouts");
             }
 
-            if (!File.Exists(FileManager.GetAppFolder() + "CustomLoadouts/" + GetConfigString("cl_config")))
+            if (!File.Exists(FileManager.GetAppFolder(GetConfigBool("cl_config_global")) + "CustomLoadouts/config.yml"))
             {
-                File.WriteAllText(FileManager.GetAppFolder() + "CustomLoadouts/" + GetConfigString("cl_config"), Encoding.UTF8.GetString(Resources.config));
+                File.WriteAllText(FileManager.GetAppFolder(GetConfigBool("cl_config_global")) + "CustomLoadouts/config.yml", Encoding.UTF8.GetString(Resources.config));
             }
 
             // Reads file contents into FileStream
-            FileStream stream = File.OpenRead(FileManager.GetAppFolder() + "CustomLoadouts/" + GetConfigString("cl_config"));
+            FileStream stream = File.OpenRead(FileManager.GetAppFolder(GetConfigBool("cl_config_global")) + "CustomLoadouts/config.yml");
 
             // Converts the FileStream into a YAML Dictionary object
             IDeserializer deserializer = new DeserializerBuilder().Build();
@@ -90,6 +89,7 @@ namespace CustomLoadouts
             delay = json.SelectToken("delay").Value<int>();
 
             config = json.SelectToken("items");
+			this.Info("Config loaded.");
         }
 
         public void TryGiveItems(JToken currentNode, IEnumerable<string> nodesToCheck, Player player)
