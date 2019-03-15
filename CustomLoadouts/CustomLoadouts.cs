@@ -16,313 +16,256 @@ using YamlDotNet.Serialization;
 
 namespace CustomLoadouts
 {
-    [PluginDetails(
-        author = "Karl Essinger",
-        name = "CustomLoadouts",
-        description = "Gives specific players items on spawn.",
-        id = "karlofduty.CustomLoadouts",
-        version = "2.1.0",
-        SmodMajor = 3,
-        SmodMinor = 3,
-        SmodRevision = 0
-    )]
-    public class CustomLoadouts : Plugin
-    {
-        internal JToken config;
-        private bool debug;
-        internal Random rnd = new Random();
-        internal HashSet<string> spawning = new HashSet<string>();
-        private bool verbose;
-        internal int delay = 1000;
+	[PluginDetails(
+		author = "Karl Essinger",
+		name = "CustomLoadouts",
+		description = "Gives specific players items on spawn.",
+		id = "karlofduty.CustomLoadouts",
+		version = "3.0.0",
+		SmodMajor = 3,
+		SmodMinor = 3,
+		SmodRevision = 0
+	)]
+	public class CustomLoadouts : Plugin
+	{
+		internal JObject loadouts;
+		private bool debug;
+		internal Random rnd = new Random();
+		internal HashSet<string> spawning = new HashSet<string>();
+		private bool verbose;
+		internal int delay = 1000;
 
-        public override void OnDisable()
-        {
-            // It's ya boi, useless function
-        }
-
-        public override void OnEnable()
-        {
-            new Task(async () =>
-            {
-                await Task.Delay(4000);
-                Reload();
-                this.Info("CustomLoadouts enabled.");
-            }).Start();
-        }
-
-        public override void Register()
-        {
-            this.AddEventHandlers(new ItemGivingHandler(this), Priority.High);
-            this.AddCommand("cl_reload", new ReloadCommand(this));
-            this.AddConfig(new Smod2.Config.ConfigSetting("cl_config_global", true, Smod2.Config.SettingType.BOOL, true, "Whether or not to use the global config directory, default is true"));
+		public override void OnDisable()
+		{
+			// It's ya boi, useless function
 		}
 
-        public void Reload()
-        {
+		public override void OnEnable()
+		{
+			new Task(async () =>
+			{
+				await Task.Delay(4000);
+				try
+				{
+					Reload();
+				}
+				catch(Exception e)
+				{
+					this.Error("Could not load config: " + e.ToString());
+				}
+				this.Info("CustomLoadouts enabled.");
+			}).Start();
+		}
+
+		public override void Register()
+		{
+			this.AddEventHandlers(new ItemGivingHandler(this), Priority.High);
+			this.AddCommand("cl_reload", new ReloadCommand(this));
+			this.AddConfig(new Smod2.Config.ConfigSetting("cl_config_global", true, Smod2.Config.SettingType.BOOL, true, "Whether or not to use the global config directory, default is true"));
+		}
+
+		public void Reload()
+		{
 			this.Info("Loading config '" + FileManager.GetAppFolder(GetConfigBool("cl_config_global")) + "CustomLoadouts/config.yml'...");
-            if (!Directory.Exists(FileManager.GetAppFolder(GetConfigBool("cl_config_global")) + "CustomLoadouts"))
-            {
-                Directory.CreateDirectory(FileManager.GetAppFolder(GetConfigBool("cl_config_global")) + "CustomLoadouts");
-            }
+			if (!Directory.Exists(FileManager.GetAppFolder(GetConfigBool("cl_config_global")) + "CustomLoadouts"))
+			{
+				Directory.CreateDirectory(FileManager.GetAppFolder(GetConfigBool("cl_config_global")) + "CustomLoadouts");
+			}
 
-            if (!File.Exists(FileManager.GetAppFolder(GetConfigBool("cl_config_global")) + "CustomLoadouts/config.yml"))
-            {
-                File.WriteAllText(FileManager.GetAppFolder(GetConfigBool("cl_config_global")) + "CustomLoadouts/config.yml", Encoding.UTF8.GetString(Resources.config));
-            }
+			if (!File.Exists(FileManager.GetAppFolder(GetConfigBool("cl_config_global")) + "CustomLoadouts/config.yml"))
+			{
+				File.WriteAllText(FileManager.GetAppFolder(GetConfigBool("cl_config_global")) + "CustomLoadouts/config.yml", Encoding.UTF8.GetString(Resources.config));
+			}
 
-            // Reads file contents into FileStream
-            FileStream stream = File.OpenRead(FileManager.GetAppFolder(GetConfigBool("cl_config_global")) + "CustomLoadouts/config.yml");
+			// Reads file contents into FileStream
+			FileStream stream = File.OpenRead(FileManager.GetAppFolder(GetConfigBool("cl_config_global")) + "CustomLoadouts/config.yml");
 
-            // Converts the FileStream into a YAML Dictionary object
-            IDeserializer deserializer = new DeserializerBuilder().Build();
-            object yamlObject = deserializer.Deserialize(new StreamReader(stream));
+			// Converts the FileStream into a YAML Dictionary object
+			IDeserializer deserializer = new DeserializerBuilder().Build();
+			object yamlObject = deserializer.Deserialize(new StreamReader(stream));
 
-            // Converts the YAML Dictionary into JSON String
-            ISerializer serializer = new SerializerBuilder().JsonCompatible().Build();
-            string jsonString = serializer.Serialize(yamlObject);
+			// Converts the YAML Dictionary into JSON String
+			ISerializer serializer = new SerializerBuilder().JsonCompatible().Build();
+			string jsonString = serializer.Serialize(yamlObject);
 
-            JObject json = JObject.Parse(jsonString);
+			JObject json = JObject.Parse(jsonString);
 
-            // Sets config variables
-            debug = json.SelectToken("debug").Value<bool>();
-            verbose = json.SelectToken("verbose").Value<bool>();
-            delay = json.SelectToken("delay").Value<int>();
+			// Sets config variables
+			debug = json.SelectToken("debug").Value<bool>();
+			verbose = json.SelectToken("verbose").Value<bool>();
+			delay = json.SelectToken("delay").Value<int>();
 
-            config = json.SelectToken("items");
+			loadouts = json.SelectToken("customloadouts").Value<JObject>();
 			this.Info("Config loaded.");
-        }
+		}
 
-        public void TryGiveItems(JToken currentNode, IEnumerable<string> nodesToCheck, Player player)
-        {
-            if (debug)
-            {
-                this.Info(currentNode.Path);
-            }
+		public void GiveItems(JToken roleLoadouts, Player player)
+		{
+			foreach (JObject itemGroupNode in roleLoadouts.Children())
+			{
+				// Converts the JObject to key/value pair
+				JProperty itemGroup = itemGroupNode.Properties().First();
 
-            try
-            {
-                if (nodesToCheck.Count() == 0)
-                {
-                    if (debug)
-                    {
-                        this.Info("Preparing to give items if random chance succeeds...");
-                    }
+				// Attempts to parse the percentage chance from the config
+				if (float.TryParse(itemGroup.Name, out float chance))
+				{
+					// Rolls a D100
+					float d100 = rnd.Next(1, 10000) / 100;
 
-                    // Checks all filters on the player
-                    foreach (JObject itemGroupNode in currentNode.Children())
-                    {
-                        // Converts the JObject to key/value pair
-                        JProperty itemGroup = itemGroupNode.Properties().First();
+					// Success if dice roll is lower than the percentage chance
+					if (chance >= d100)
+					{
+						if (debug)
+						{
+							this.Info(itemGroupNode.Path + ": Succeded random chance. " + chance + " >= " + d100);
+						}
 
-                        // Attempts to parse the percentage chance from the config
-                        if (float.TryParse(itemGroup.Name, out float chance))
-                        {
-                            // Rolls a D100
-                            float d100 = rnd.Next(1, 10000) / 100;
+						// Gives all items in the item bundle to the player
+						foreach (string itemName in itemGroup.Value as JArray)
+						{
+							switch (itemName)
+							{
+								case "REMOVEAMMO":
+									// Deletes the existing ammo if set in the config
+									try
+									{
+										player.SetAmmo(AmmoType.DROPPED_5, 0);
+										player.SetAmmo(AmmoType.DROPPED_7, 0);
+										player.SetAmmo(AmmoType.DROPPED_9, 0);
 
-                            // Success if dice roll is lower than the percentage chance
-                            if (chance >= d100)
-                            {
-                                if (debug)
-                                {
-                                    this.Info(currentNode.Path + ": Succeded random chance. " + chance + " >= " + d100);
-                                }
+										if (verbose)
+										{
+											this.Info("Cleared ammo of " + player.TeamRole.Role + " " + player.Name + "(" + player.SteamId + ").");
+										}
+									}
+									catch (Exception e)
+									{
+										this.Error("Error occured while resetting ammo of " + player + ".");
+										if (debug)
+										{
+											this.Error(e.ToString());
+										}
+									}
+									break;
 
-                                // Gives all items in the item bundle to the player
-                                foreach (string itemName in itemGroup.Value as JArray)
-                                {
-                                    switch (itemName)
-                                    {
-                                        case "REMOVEAMMO":
-                                            // Deletes the existing ammo if set in the config
-                                            try
-                                            {
-                                                player.SetAmmo(AmmoType.DROPPED_5, 0);
-                                                player.SetAmmo(AmmoType.DROPPED_7, 0);
-                                                player.SetAmmo(AmmoType.DROPPED_9, 0);
+								case "REMOVEITEMS":
+									// Deletes the existing items if set in the config
+									try
+									{
+										foreach (Smod2.API.Item item in player.GetInventory())
+										{
+											item.Remove();
+										}
 
-                                                if (verbose)
-                                                {
-                                                    this.Info("Cleared ammo of " + player.TeamRole.Role + " " + player.Name + "(" + player.SteamId + ").");
-                                                }
-                                            }
-                                            catch (Exception e)
-                                            {
-                                                this.Error("Error occured while resetting ammo of " + player + ".");
-                                                if (debug)
-                                                {
-                                                    this.Error(e.ToString());
-                                                }
-                                            }
-                                            break;
+										if (verbose)
+										{
+											this.Info("Cleared inventory of " + player.TeamRole.Role + " " + player.Name + "(" + player.SteamId + ").");
+										}
+									}
+									catch (Exception e)
+									{
+										this.Error("Error occured while resetting inventory of " + player + ".");
+										if (debug)
+										{
+											this.Error(e.ToString());
+										}
+									}
+									break;
 
-                                        case "REMOVEITEMS":
-                                            // Deletes the existing items if set in the config
-                                            try
-                                            {
-                                                foreach (Smod2.API.Item item in player.GetInventory())
-                                                {
-                                                    item.Remove();
-                                                }
+								case "DROPPED_5":
+									// Gives a mag of 5.56mm ammo
+									try
+									{
+										player.SetAmmo(AmmoType.DROPPED_5, player.GetAmmo(AmmoType.DROPPED_5) + 25);
+										if (verbose)
+										{
+											this.Info(player.TeamRole.Role + " " + player.Name + "(" + player.SteamId + ") was given a mag of 5.56mm ammo (25 shots).");
+										}
+									}
+									catch (Exception e)
+									{
+										this.Error("Error occured while giving a mag of 5.56mm ammo to " + player + ".");
+										if (debug)
+										{
+											this.Error(e.ToString());
+										}
+									}
+									break;
 
-                                                if (verbose)
-                                                {
-                                                    this.Info("Cleared inventory of " + player.TeamRole.Role + " " + player.Name + "(" + player.SteamId + ").");
-                                                }
-                                            }
-                                            catch (Exception e)
-                                            {
-                                                this.Error("Error occured while resetting inventory of " + player + ".");
-                                                if (debug)
-                                                {
-                                                    this.Error(e.ToString());
-                                                }
-                                            }
-                                            break;
+								case "DROPPED_7":
+									// Gives a mag of 7.62mm ammo
+									try
+									{
+										player.SetAmmo(AmmoType.DROPPED_7, player.GetAmmo(AmmoType.DROPPED_7) + 35);
+										if (verbose)
+										{
+											this.Info(player.TeamRole.Role + " " + player.Name + "(" + player.SteamId + ") was given a mag of 7.62mm ammo (35 shots).");
+										}
+									}
+									catch (Exception e)
+									{
+										this.Error("Error occured while giving a mag of 7.62mm ammo to " + player + ".");
+										if (debug)
+										{
+											this.Error(e.ToString());
+										}
+									}
+									break;
 
-                                        case "DROPPED_5":
-                                            // Gives a mag of 5.56mm ammo
-                                            try
-                                            {
-                                                player.SetAmmo(AmmoType.DROPPED_5, player.GetAmmo(AmmoType.DROPPED_5) + 25);
-                                                if (verbose)
-                                                {
-                                                    this.Info(player.TeamRole.Role + " " + player.Name + "(" + player.SteamId + ") was given a mag of 5.56mm ammo (25 shots).");
-                                                }
-                                            }
-                                            catch (Exception e)
-                                            {
-                                                this.Error("Error occured while giving a mag of 5.56mm ammo to " + player + ".");
-                                                if (debug)
-                                                {
-                                                    this.Error(e.ToString());
-                                                }
-                                            }
-                                            break;
+								case "DROPPED_9":
+									// Gives a clip of 9mm ammo
+									try
+									{
+										player.SetAmmo(AmmoType.DROPPED_9, player.GetAmmo(AmmoType.DROPPED_9) + 15);
+										if (verbose)
+										{
+											this.Info(player.TeamRole.Role + " " + player.Name + "(" + player.SteamId + ") was given a clip of 9mm ammo (15 shots).");
+										}
+									}
+									catch (Exception e)
+									{
+										this.Error("Error occured while giving a clip of 9mm ammo to " + player + ".");
+										if (debug)
+										{
+											this.Error(e.ToString());
+										}
+									}
+									break;
 
-                                        case "DROPPED_7":
-                                            // Gives a mag of 7.62mm ammo
-                                            try
-                                            {
-                                                player.SetAmmo(AmmoType.DROPPED_7, player.GetAmmo(AmmoType.DROPPED_7) + 35);
-                                                if (verbose)
-                                                {
-                                                    this.Info(player.TeamRole.Role + " " + player.Name + "(" + player.SteamId + ") was given a mag of 7.62mm ammo (35 shots).");
-                                                }
-                                            }
-                                            catch (Exception e)
-                                            {
-                                                this.Error("Error occured while giving a mag of 7.62mm ammo to " + player + ".");
-                                                if (debug)
-                                                {
-                                                    this.Error(e.ToString());
-                                                }
-                                            }
-                                            break;
-
-                                        case "DROPPED_9":
-                                            // Gives a clip of 9mm ammo
-                                            try
-                                            {
-                                                player.SetAmmo(AmmoType.DROPPED_9, player.GetAmmo(AmmoType.DROPPED_9) + 15);
-                                                if (verbose)
-                                                {
-                                                    this.Info(player.TeamRole.Role + " " + player.Name + "(" + player.SteamId + ") was given a clip of 9mm ammo (15 shots).");
-                                                }
-                                            }
-                                            catch (Exception e)
-                                            {
-                                                this.Error("Error occured while giving a clip of 9mm ammo to " + player + ".");
-                                                if (debug)
-                                                {
-                                                    this.Error(e.ToString());
-                                                }
-                                            }
-                                            break;
-
-                                        default:
-                                            // Parses the string to the enumerable itemtype
-                                            try
-                                            {
-                                                player.GiveItem((ItemType)Enum.Parse(typeof(ItemType), itemName));
-                                                if (verbose)
-                                                {
-                                                    this.Info(player.TeamRole.Role + " " + player.Name + "(" + player.SteamId + ") was given item " + itemName + ".");
-                                                }
-                                            }
-                                            catch (Exception e)
-                                            {
-                                                this.Error("Error occured while giving item \"" + itemName + "\" to " + player + ".");
-                                                if (debug)
-                                                {
-                                                    this.Error(e.ToString());
-                                                }
-                                            }
-                                            break;
-                                    }
-                                }
-                            }
-                            else if (debug)
-                            {
-                                this.Info(currentNode.Path + ": Failed random chance. " + chance + " < " + d100);
-                            }
-                        }
-                        else
-                        {
-                            this.Error("Invalid chance: " + itemGroup.Name);
-                        }
-                    }
-                    return;
-                }
-            }
-            catch (Exception e)
-            {
-                this.Error("ERROR while giving player items: \n" + e.ToString());
-            }
-
-            try
-            {
-                // Lets all players into open fields from the config
-                if (currentNode.SelectToken("all") != null)
-                {
-                    if (debug)
-                    {
-                        this.Info(currentNode.Path + ".all exists.");
-                    }
-                    TryGiveItems(currentNode["all"], nodesToCheck.Skip(1), player);
-                }
-                else if (debug)
-                {
-                    this.Info(currentNode.Path + ".all does not exist.");
-                }
-            }
-            catch (Exception e)
-            {
-                this.Error("ERROR while checking if " + currentNode.Path + "." + nodesToCheck.First() + " node exists: \n" + e.ToString());
-            }
-
-            try
-            {
-                // Checks if the player fits the filter from the config
-                if (currentNode.SelectToken(nodesToCheck.First()) != null)
-                {
-                    if (debug)
-                    {
-                        this.Info(currentNode.Path + "." + nodesToCheck.First() + " exists.");
-                    }
-                    TryGiveItems(currentNode[nodesToCheck.First()], nodesToCheck.Skip(1), player);
-                }
-                else if (debug)
-                {
-                    this.Info(currentNode.Path + "." + nodesToCheck.First() + " does not exist.");
-                }
-            }
-            catch (Exception e)
-            {
-                this.Error("ERROR while checking if " + currentNode.Path + "." + nodesToCheck.First() + " node exists: \n" + e.ToString());
-            }
-        }
-    }
+								default:
+									// Parses the string to the enumerable itemtype
+									try
+									{
+										player.GiveItem((ItemType)Enum.Parse(typeof(ItemType), itemName));
+										if (verbose)
+										{
+											this.Info(player.TeamRole.Role + " " + player.Name + "(" + player.SteamId + ") was given item " + itemName + ".");
+										}
+									}
+									catch (Exception e)
+									{
+										this.Error("Error occured while giving item \"" + itemName + "\" to " + player + ".");
+										if (debug)
+										{
+											this.Error(e.ToString());
+										}
+									}
+									break;
+							}
+						}
+					}
+					else if (debug)
+					{
+						this.Info(itemGroupNode.Path + ": Failed random chance. " + chance + " < " + d100);
+					}
+				}
+				else
+				{
+					this.Error("Invalid chance: " + itemGroup.Name);
+				}
+			}
+		}
+	}
 
     internal class ItemGivingHandler : IEventHandlerSpawn
     {
@@ -354,12 +297,41 @@ namespace CustomLoadouts
                     }
                     try
                     {
-                        // The ternary statements just re-evaluate empty strings to "none"
-                        plugin.TryGiveItems(plugin.config, new List<string> { player.SteamId == "" ? "none" : player.SteamId, player.GetRankName() == "" ? "none" : player.GetRankName(), player.TeamRole.Role.ToString() == "" ? "none" : player.TeamRole.Role.ToString() }, player);
+						// Check each registered permission node
+						JProperty[] permissionNodes = plugin.loadouts.Properties().ToArray();
+						foreach (JProperty permissionNode in permissionNodes)
+						{
+							if (player.HasPermission("customloadouts." + permissionNode.Name))
+							{
+								try
+								{
+									// Check if their role has a custom loadout registered
+									JProperty[] roles = permissionNode.Value.Value<JObject>().Properties().ToArray();
+									foreach (JProperty role in roles)
+									{
+										if (player.TeamRole.Role.ToString() == role.Name || role.Name == "all")
+										{
+											try
+											{
+												plugin.GiveItems(role.Value, ev.Player);
+											}
+											catch(Exception e)
+											{
+												plugin.Error("Error giving items: " + e.ToString());
+											}
+										}
+									}
+								}
+								catch(Exception e)
+								{
+									plugin.Error("Error checking role: " + e.ToString());
+								}
+							}
+						}
                     }
                     catch (Exception e)
                     {
-                        plugin.Error(e.ToString());
+                        plugin.Error("Error checking permission: " + e.ToString());
                     }
                     plugin.spawning.Remove(ev.Player.SteamId);
                 }).Start();
@@ -388,8 +360,22 @@ namespace CustomLoadouts
 
         public string[] OnCall(ICommandSender sender, string[] args)
         {
-            plugin.Reload();
-            return new string[] { "CustomLoadouts has been reloaded." };
+			if (sender is Player player)
+			{
+				if (!player.HasPermission("customloadouts.reload"))
+				{
+					return new string[] { "You don't have permission to use that command." };
+				}
+			}
+			try
+			{
+				plugin.Reload();
+			}
+			catch (Exception e)
+			{
+				plugin.Error("Could not load config: " + e.ToString());
+			}
+			return new string[] { "CustomLoadouts has been reloaded." };
         }
     }
 }
