@@ -13,7 +13,7 @@ This plugin has it's own config which is placed in your global config folder whe
 
 The plugin only has one option in the server config, `cl_global`, it decides whether to use the global config folder or not, defaults to true.
 
-Default config:
+### Default config:
 ```yaml
 # Prints a confirmation whenever a player is given a loadout
 verbose: true
