@@ -73,4 +73,4 @@ You can add more entries by following the example above. I believe each config o
 ## Command
 | Command | Permission | Description |
 |----     |----        |----         |
-| `cl_reload` | `customloadouts.relaod` | Reloads the cl config.
+| `cl_reload` | `customloadouts.reload` | Reloads the cl config.
