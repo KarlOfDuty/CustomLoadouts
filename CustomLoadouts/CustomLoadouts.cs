@@ -4,6 +4,7 @@ using Smod2;
 using Smod2.API;
 using Smod2.Attributes;
 using Smod2.Commands;
+using Smod2.Config;
 using Smod2.EventHandlers;
 using Smod2.Events;
 using System;
@@ -61,7 +62,7 @@ namespace CustomLoadouts
 		{
 			this.AddEventHandlers(new ItemGivingHandler(this), Priority.High);
 			this.AddCommand("cl_reload", new ReloadCommand(this));
-			this.AddConfig(new Smod2.Config.ConfigSetting("cl_config_global", true, Smod2.Config.SettingType.BOOL, true, "Whether or not to use the global config directory, default is true"));
+			this.AddConfig(new ConfigSetting("cl_config_global", true, true, "Whether or not to use the global config directory, default is true"));
 		}
 
 		public void Reload()
