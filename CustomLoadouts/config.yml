@@ -17,7 +17,7 @@ customloadouts:
                 # Items to spawn, must be all caps, check #resources in the SMOD discord server for item names.
                 # You can start with REMOVEITEMS and REMOVEAMMO to delete the existing items/ammo.
                 # All weapons spawn with one mag/clip loaded which cannot be removed, giving ammo adds the ammo directly to the player instead of spawning it as an item in their inventory.
-                # This example has a 50% chance to spawn a coin to all players with the rank donator
+                # This example has a 50% chance to spawn a coin to all players with the customloadouts.donatorloadouts permission node
                 - COIN
             - 10:
                 - MEDKIT
