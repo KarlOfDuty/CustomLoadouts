@@ -62,24 +62,24 @@ namespace CustomLoadouts
 		{
 			this.AddEventHandlers(new ItemGivingHandler(this), Priority.High);
 			this.AddCommand("cl_reload", new ReloadCommand(this));
-			this.AddConfig(new ConfigSetting("cl_config_global", true, true, "Whether or not to use the global config directory, default is true"));
+			this.AddConfig(new ConfigSetting("cl_global", true, true, "Whether or not to use the global config directory, default is true"));
 		}
 
 		public void Reload()
 		{
-			this.Info("Loading config '" + FileManager.GetAppFolder(GetConfigBool("cl_config_global")) + "CustomLoadouts/config.yml'...");
-			if (!Directory.Exists(FileManager.GetAppFolder(GetConfigBool("cl_config_global")) + "CustomLoadouts"))
+			this.Info("Loading config '" + FileManager.GetAppFolder(GetConfigBool("cl_global")) + "CustomLoadouts/config.yml'...");
+			if (!Directory.Exists(FileManager.GetAppFolder(GetConfigBool("cl_global")) + "CustomLoadouts"))
 			{
-				Directory.CreateDirectory(FileManager.GetAppFolder(GetConfigBool("cl_config_global")) + "CustomLoadouts");
+				Directory.CreateDirectory(FileManager.GetAppFolder(GetConfigBool("cl_global")) + "CustomLoadouts");
 			}
 
-			if (!File.Exists(FileManager.GetAppFolder(GetConfigBool("cl_config_global")) + "CustomLoadouts/config.yml"))
+			if (!File.Exists(FileManager.GetAppFolder(GetConfigBool("cl_global")) + "CustomLoadouts/config.yml"))
 			{
-				File.WriteAllText(FileManager.GetAppFolder(GetConfigBool("cl_config_global")) + "CustomLoadouts/config.yml", Encoding.UTF8.GetString(Resources.config));
+				File.WriteAllText(FileManager.GetAppFolder(GetConfigBool("cl_global")) + "CustomLoadouts/config.yml", Encoding.UTF8.GetString(Resources.config));
 			}
 
 			// Reads file contents into FileStream
-			FileStream stream = File.OpenRead(FileManager.GetAppFolder(GetConfigBool("cl_config_global")) + "CustomLoadouts/config.yml");
+			FileStream stream = File.OpenRead(FileManager.GetAppFolder(GetConfigBool("cl_global")) + "CustomLoadouts/config.yml");
 
 			// Converts the FileStream into a YAML Dictionary object
 			IDeserializer deserializer = new DeserializerBuilder().Build();
