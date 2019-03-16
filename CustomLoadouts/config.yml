@@ -6,7 +6,7 @@ debug: false
 delay: 0
 
 # This sets up the loadouts and the permission nodes required to get them
-# For instance "customloadouts.donatorloadouts" has a chance of giving all classes a coin or medkit but also adds entire extra loadouts for scientists
+# For instance "customloadouts.donatorloadouts" gives all loadouts under the donatorloadouts node below, as long as the class and chance checks are successful.
 customloadouts:
     # Name of this permission node
     donatorloadouts:
