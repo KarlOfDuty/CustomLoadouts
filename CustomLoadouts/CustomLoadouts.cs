@@ -24,7 +24,7 @@ namespace CustomLoadouts
 		id = "karlofduty.CustomLoadouts",
 		version = "3.0.0",
 		SmodMajor = 3,
-		SmodMinor = 3,
+		SmodMinor = 4,
 		SmodRevision = 0
 	)]
 	public class CustomLoadouts : Plugin
@@ -43,19 +43,14 @@ namespace CustomLoadouts
 
 		public override void OnEnable()
 		{
-			new Task(async () =>
+			try
 			{
-				await Task.Delay(4000);
-				try
-				{
-					Reload();
-				}
-				catch(Exception e)
-				{
-					this.Error("Could not load config: " + e.ToString());
-				}
-				this.Info("CustomLoadouts enabled.");
-			}).Start();
+				Reload();
+			}
+			catch(Exception e)
+			{
+				this.Error("Could not load config: " + e.ToString());
+			}
 		}
 
 		public override void Register()
