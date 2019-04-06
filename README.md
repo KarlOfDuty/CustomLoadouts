@@ -27,19 +27,19 @@ delay: 0
 customloadouts:
     # Name of this permission node
     donatorloadouts:
-        # Class, check #resources in the SMOD discord server for class names, set to all for all classes
+        # Class, check #resources in the SMOD discord server for class names, set to all to give to all classes
         all:
             # Percentage chance for item group to spawn
             - 50:
-                # Items to spawn, must be all caps, check #resources in the SMOD discord server for item names.
-                # You can start with REMOVEITEMS and REMOVEAMMO to delete the existing items/ammo.
+                # Items to spawn, check #resources in the SMOD discord server for item names.
+                # You can start a loadout with REMOVEITEMS and REMOVEAMMO to delete the existing items/ammo.
                 # All weapons spawn with one mag/clip loaded which cannot be removed, giving ammo adds the ammo directly to the player instead of spawning it as an item in their inventory.
-                # This example has a 50% chance to spawn a coin to all players with the rank donator
-                - COIN
+                - COIN # This example has a 50% chance to spawn a coin to all players with the customloadouts.donatorloadouts permission node
             - 10:
                 - MEDKIT
         SCIENTIST:
             - 10:
+                # Starts with REMOOVEITEMS to clear the default inventory before the items are added.
                 - REMOVEITEMS
                 - MAJOR_SCIENTIST_KEYCARD
                 - MEDKIT
@@ -68,7 +68,7 @@ customloadouts:
                 - MICROHID
 ```
 
-You can add more entries by following the example above. I believe each config option is pretty self explanatory with the example above.  If you have any questions, you can ask them in my discord server at the link above.
+You can add more entries by following the example above. I believe each config option is pretty self explanatory config comments.  If you have any questions, you can ask them in my discord server at the link above.
 
 ## Command
 | Command | Permission | Description |
