@@ -119,7 +119,7 @@ namespace CustomLoadouts
 						// Gives all items in the item bundle to the player
 						foreach (string itemName in itemGroup.Value as JArray)
 						{
-							switch (itemName)
+							switch (itemName.ToUpper())
 							{
 								case "REMOVEAMMO":
 									// Deletes the existing ammo if set in the config
