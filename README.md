@@ -39,7 +39,7 @@ customloadouts:
                 - MEDKIT
         SCIENTIST:
             - 10:
-                # Starts with REMOOVEITEMS to clear the default inventory before the items are added.
+                # Starts with REMOVEITEMS to clear the default inventory before the items are added.
                 - REMOVEITEMS
                 - MAJOR_SCIENTIST_KEYCARD
                 - MEDKIT
