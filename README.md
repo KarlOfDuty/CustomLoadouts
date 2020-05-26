@@ -1,4 +1,4 @@
-# CustomLoadouts
+# CustomLoadouts [![Release](https://img.shields.io/github/release/KarlofDuty/CustomLoadouts.svg)](https://github.com/KarlOfDuty/CustomLoadouts/releases) [![Downloads](https://img.shields.io/github/downloads/KarlOfDuty/CustomLoadouts/total.svg)](https://github.com/KarlOfDuty/CustomLoadouts/releases) [![Discord Server](https://img.shields.io/discord/430468637183442945.svg?label=discord)](https://discord.gg/C5qMvkj)
 An smod plugin similar to default-item but much more customisable to specific players. It can give items based on the player's class and a random chance where access to each loadout can be restricted to specific players or ranks using permissions.
 
 Can also be used to set up special subclasses with customized loadouts with a customisable chance to get the loadout on spawn.
@@ -39,7 +39,7 @@ customloadouts:
                 - MEDKIT
         SCIENTIST:
             - 10:
-                # Starts with REMOOVEITEMS to clear the default inventory before the items are added.
+                # Starts with REMOVEITEMS to clear the default inventory before the items are added.
                 - REMOVEITEMS
                 - MAJOR_SCIENTIST_KEYCARD
                 - MEDKIT
