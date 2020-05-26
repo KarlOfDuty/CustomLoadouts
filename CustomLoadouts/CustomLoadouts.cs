@@ -22,9 +22,9 @@ namespace CustomLoadouts
 		name = "CustomLoadouts",
 		description = "Gives specific players items on spawn.",
 		id = "karlofduty.CustomLoadouts",
-		version = "3.0.0",
+		version = "3.0.1",
 		SmodMajor = 3,
-		SmodMinor = 4,
+		SmodMinor = 7,
 		SmodRevision = 0
 	)]
 	public class CustomLoadouts : Plugin
@@ -62,19 +62,19 @@ namespace CustomLoadouts
 
 		public void Reload()
 		{
-			this.Info("Loading config '" + FileManager.GetAppFolder(GetConfigBool("cl_global")) + "CustomLoadouts/config.yml'...");
-			if (!Directory.Exists(FileManager.GetAppFolder(GetConfigBool("cl_global")) + "CustomLoadouts"))
+			this.Info("Loading config '" + FileManager.GetAppFolder(true, !GetConfigBool("cl_global")) + "CustomLoadouts/config.yml'...");
+			if (!Directory.Exists(FileManager.GetAppFolder(true, !GetConfigBool("cl_global")) + "CustomLoadouts"))
 			{
-				Directory.CreateDirectory(FileManager.GetAppFolder(GetConfigBool("cl_global")) + "CustomLoadouts");
+				Directory.CreateDirectory(FileManager.GetAppFolder(true, !GetConfigBool("cl_global")) + "CustomLoadouts");
 			}
 
-			if (!File.Exists(FileManager.GetAppFolder(GetConfigBool("cl_global")) + "CustomLoadouts/config.yml"))
+			if (!File.Exists(FileManager.GetAppFolder(true, !GetConfigBool("cl_global")) + "CustomLoadouts/config.yml"))
 			{
-				File.WriteAllText(FileManager.GetAppFolder(GetConfigBool("cl_global")) + "CustomLoadouts/config.yml", Encoding.UTF8.GetString(Resources.config));
+				File.WriteAllText(FileManager.GetAppFolder(true, !GetConfigBool("cl_global")) + "CustomLoadouts/config.yml", Encoding.UTF8.GetString(Resources.config));
 			}
 
 			// Reads file contents into FileStream
-			FileStream stream = File.OpenRead(FileManager.GetAppFolder(GetConfigBool("cl_global")) + "CustomLoadouts/config.yml");
+			FileStream stream = File.OpenRead(FileManager.GetAppFolder(true, !GetConfigBool("cl_global")) + "CustomLoadouts/config.yml");
 
 			// Converts the FileStream into a YAML Dictionary object
 			IDeserializer deserializer = new DeserializerBuilder().Build();
@@ -106,7 +106,7 @@ namespace CustomLoadouts
 				if (float.TryParse(itemGroup.Name, out float chance))
 				{
 					// Rolls a D100
-					float d100 = rnd.Next(1, 10000) / 100;
+					float d100 = rnd.Next(1, 10000) / 100.0f;
 
 					// Success if dice roll is lower than the percentage chance
 					if (chance >= d100)
@@ -131,7 +131,7 @@ namespace CustomLoadouts
 
 										if (verbose)
 										{
-											this.Info("Cleared ammo of " + player.TeamRole.Role + " " + player.Name + "(" + player.SteamId + ").");
+											this.Info("Cleared ammo of " + player.TeamRole.Role + " " + player.Name + "(" + player.UserId + ").");
 										}
 									}
 									catch (Exception e)
@@ -155,7 +155,7 @@ namespace CustomLoadouts
 
 										if (verbose)
 										{
-											this.Info("Cleared inventory of " + player.TeamRole.Role + " " + player.Name + "(" + player.SteamId + ").");
+											this.Info("Cleared inventory of " + player.TeamRole.Role + " " + player.Name + "(" + player.UserId + ").");
 										}
 									}
 									catch (Exception e)
@@ -175,7 +175,7 @@ namespace CustomLoadouts
 										player.SetAmmo(AmmoType.DROPPED_5, player.GetAmmo(AmmoType.DROPPED_5) + 25);
 										if (verbose)
 										{
-											this.Info(player.TeamRole.Role + " " + player.Name + "(" + player.SteamId + ") was given a mag of 5.56mm ammo (25 shots).");
+											this.Info(player.TeamRole.Role + " " + player.Name + "(" + player.UserId + ") was given a mag of 5.56mm ammo (25 shots).");
 										}
 									}
 									catch (Exception e)
@@ -195,7 +195,7 @@ namespace CustomLoadouts
 										player.SetAmmo(AmmoType.DROPPED_7, player.GetAmmo(AmmoType.DROPPED_7) + 35);
 										if (verbose)
 										{
-											this.Info(player.TeamRole.Role + " " + player.Name + "(" + player.SteamId + ") was given a mag of 7.62mm ammo (35 shots).");
+											this.Info(player.TeamRole.Role + " " + player.Name + "(" + player.UserId + ") was given a mag of 7.62mm ammo (35 shots).");
 										}
 									}
 									catch (Exception e)
@@ -215,7 +215,7 @@ namespace CustomLoadouts
 										player.SetAmmo(AmmoType.DROPPED_9, player.GetAmmo(AmmoType.DROPPED_9) + 15);
 										if (verbose)
 										{
-											this.Info(player.TeamRole.Role + " " + player.Name + "(" + player.SteamId + ") was given a clip of 9mm ammo (15 shots).");
+											this.Info(player.TeamRole.Role + " " + player.Name + "(" + player.UserId + ") was given a clip of 9mm ammo (15 shots).");
 										}
 									}
 									catch (Exception e)
@@ -232,10 +232,10 @@ namespace CustomLoadouts
 									// Parses the string to the enumerable itemtype
 									try
 									{
-										player.GiveItem((ItemType)Enum.Parse(typeof(ItemType), itemName));
+										player.GiveItem((Smod2.API.ItemType)Enum.Parse(typeof(Smod2.API.ItemType), itemName));
 										if (verbose)
 										{
-											this.Info(player.TeamRole.Role + " " + player.Name + "(" + player.SteamId + ") was given item " + itemName + ".");
+											this.Info(player.TeamRole.Role + " " + player.Name + "(" + player.UserId + ") was given item " + itemName + ".");
 										}
 									}
 									catch (Exception e)
@@ -275,20 +275,20 @@ namespace CustomLoadouts
         public void OnSpawn(PlayerSpawnEvent ev)
         {
             // Only runs if not already running
-            if (!plugin.spawning.Contains(ev.Player.SteamId))
+            if (!plugin.spawning.Contains(ev.Player.UserId))
             {
-                plugin.spawning.Add(ev.Player.SteamId);
+                plugin.spawning.Add(ev.Player.UserId);
                 new Task(async () =>
                 {
                     // Delays execution until smod has created the object
                     await Task.Delay(500);
                     await Task.Delay(plugin.delay);
 
-                    Player player = plugin.Server.GetPlayers(ev.Player.SteamId)[0];
+                    Player player = plugin.Server.GetPlayers(ev.Player.UserId)[0];
                     if (player == null)
                     {
                         plugin.Warn("Could not find spawning player '" + ev.Player.Name + "', did they disconnect?");
-                        plugin.spawning.Remove(ev.Player.SteamId);
+                        plugin.spawning.Remove(ev.Player.UserId);
                         return;
                     }
                     try
@@ -329,7 +329,7 @@ namespace CustomLoadouts
                     {
                         plugin.Error("Error checking permission: " + e.ToString());
                     }
-                    plugin.spawning.Remove(ev.Player.SteamId);
+                    plugin.spawning.Remove(ev.Player.UserId);
                 }).Start();
             }
         }
@@ -360,7 +360,7 @@ namespace CustomLoadouts
 			{
 				if (!player.HasPermission("customloadouts.reload"))
 				{
-					return new string[] { "You don't have permission to use that command." };
+					return new[] { "You don't have permission to use that command." };
 				}
 			}
 			try
@@ -371,7 +371,7 @@ namespace CustomLoadouts
 			{
 				plugin.Error("Could not load config: " + e.ToString());
 			}
-			return new string[] { "CustomLoadouts has been reloaded." };
+			return new[] { "CustomLoadouts has been reloaded." };
         }
     }
 }
