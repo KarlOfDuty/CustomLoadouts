@@ -3,7 +3,7 @@ pipeline {
   stages {
     stage('Dependencies') {
       steps {
-        sh 'nuget restore CustomLoadouts.sln'
+        sh 'nuget restore CustomLoadouts/CustomLoadouts.sln'
       }
     }
     stage('Build') {
