@@ -1,4 +1,4 @@
-﻿using CustomLoadouts.Properties;
+using CustomLoadouts.Properties;
 using Newtonsoft.Json.Linq;
 using Smod2;
 using Smod2.API;
@@ -22,9 +22,9 @@ namespace CustomLoadouts
 		name = "CustomLoadouts",
 		description = "Gives specific players items on spawn.",
 		id = "karlofduty.CustomLoadouts",
-		version = "3.0.1",
+		version = "3.0.2",
 		SmodMajor = 3,
-		SmodMinor = 7,
+		SmodMinor = 8,
 		SmodRevision = 0
 	)]
 	public class CustomLoadouts : Plugin
