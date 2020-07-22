@@ -22,10 +22,10 @@ namespace CustomLoadouts
 		name = "CustomLoadouts",
 		description = "Gives specific players items on spawn.",
 		id = "karlofduty.CustomLoadouts",
-		version = "3.0.2",
+		version = "3.0.3",
 		SmodMajor = 3,
 		SmodMinor = 8,
-		SmodRevision = 0
+		SmodRevision = 1
 	)]
 	public class CustomLoadouts : Plugin
 	{
