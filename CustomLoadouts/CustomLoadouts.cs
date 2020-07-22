@@ -178,6 +178,7 @@ namespace CustomLoadouts
 									}
 									break;
 
+								case "AMMO556":
 								case "DROPPED_5":
 									// Gives a mag of 5.56mm ammo
 									try
@@ -198,6 +199,7 @@ namespace CustomLoadouts
 									}
 									break;
 
+								case "AMMO762":
 								case "DROPPED_7":
 									// Gives a mag of 7.62mm ammo
 									try
@@ -218,6 +220,7 @@ namespace CustomLoadouts
 									}
 									break;
 
+								case "AMMO9MM":
 								case "DROPPED_9":
 									// Gives a clip of 9mm ammo
 									try
