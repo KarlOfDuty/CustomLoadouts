@@ -253,7 +253,7 @@ namespace CustomLoadouts
 									}
 									catch (Exception e)
 									{
-										this.Error("Error occured while giving item \"" + itemName.ToUpper() + "\" to " + player + ".");
+										this.Error("Error occured while giving item \"" + itemName.ToUpper() + "\" to " + player + ". Are you sure you spelled that item name correctly?");
 										if (debug)
 										{
 											this.Error(e.ToString());
