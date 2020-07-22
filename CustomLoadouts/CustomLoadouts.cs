@@ -245,15 +245,15 @@ namespace CustomLoadouts
 									// Parses the string to the enumerable itemtype
 									try
 									{
-										player.GiveItem((Smod2.API.ItemType)Enum.Parse(typeof(Smod2.API.ItemType), itemName));
+										player.GiveItem((Smod2.API.ItemType)Enum.Parse(typeof(Smod2.API.ItemType), itemName.ToUpper()));
 										if (verbose)
 										{
-											this.Info(player.TeamRole.Role + " " + player.Name + "(" + player.UserId + ") was given item " + itemName + ".");
+											this.Info(player.TeamRole.Role + " " + player.Name + "(" + player.UserId + ") was given item " + itemName.ToUpper() + ".");
 										}
 									}
 									catch (Exception e)
 									{
-										this.Error("Error occured while giving item \"" + itemName + "\" to " + player + ".");
+										this.Error("Error occured while giving item \"" + itemName.ToUpper() + "\" to " + player + ".");
 										if (debug)
 										{
 											this.Error(e.ToString());
