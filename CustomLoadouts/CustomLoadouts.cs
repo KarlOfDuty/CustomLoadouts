@@ -87,11 +87,21 @@ namespace CustomLoadouts
 			JObject json = JObject.Parse(jsonString);
 
 			// Sets config variables
-			debug = json.SelectToken("debug").Value<bool>();
-			verbose = json.SelectToken("verbose").Value<bool>();
-			delay = json.SelectToken("delay").Value<int>();
+			debug = json.SelectToken("debug")?.Value<bool>() ?? true;
+			verbose = json.SelectToken("verbose")?.Value<bool>() ?? true;
+			delay = json.SelectToken("delay")?.Value<int>() ?? 0;
 
-			loadouts = json.SelectToken("customloadouts").Value<JObject>();
+			try
+			{
+				loadouts = json.SelectToken("customloadouts").Value<JObject>();
+			}
+			catch(Exception e)
+			{
+				this.Error("Error reading 'customloadouts' tree from config, check your formatting!");
+				this.Error(e.ToString());
+				return;
+			}
+
 			this.Info("Config loaded.");
 		}
 
@@ -263,36 +273,36 @@ namespace CustomLoadouts
 		}
 	}
 
-    internal class ItemGivingHandler : IEventHandlerSpawn
-    {
-        private CustomLoadouts plugin;
+	internal class ItemGivingHandler : IEventHandlerSpawn
+	{
+		private CustomLoadouts plugin;
 
-        public ItemGivingHandler(CustomLoadouts plugin)
-        {
-            this.plugin = plugin;
-        }
+		public ItemGivingHandler(CustomLoadouts plugin)
+		{
+			this.plugin = plugin;
+		}
 
-        public void OnSpawn(PlayerSpawnEvent ev)
-        {
-            // Only runs if not already running
-            if (!plugin.spawning.Contains(ev.Player.UserId))
-            {
-                plugin.spawning.Add(ev.Player.UserId);
-                new Task(async () =>
-                {
-                    // Delays execution until smod has created the object
-                    await Task.Delay(500);
-                    await Task.Delay(plugin.delay);
+		public void OnSpawn(PlayerSpawnEvent ev)
+		{
+			// Only runs if not already running
+			if (!plugin.spawning.Contains(ev.Player.UserId))
+			{
+				plugin.spawning.Add(ev.Player.UserId);
+				new Task(async () =>
+				{
+					// Delays execution until smod has created the object
+					await Task.Delay(500);
+					await Task.Delay(plugin.delay);
 
-                    Player player = plugin.Server.GetPlayers(ev.Player.UserId)[0];
-                    if (player == null)
-                    {
-                        plugin.Warn("Could not find spawning player '" + ev.Player.Name + "', did they disconnect?");
-                        plugin.spawning.Remove(ev.Player.UserId);
-                        return;
-                    }
-                    try
-                    {
+					Player player = plugin.Server.GetPlayers(ev.Player.UserId)[0];
+					if (player == null)
+					{
+						plugin.Warn("Could not find spawning player '" + ev.Player.Name + "', did they disconnect?");
+						plugin.spawning.Remove(ev.Player.UserId);
+						return;
+					}
+					try
+					{
 						// Check each registered permission node
 						JProperty[] permissionNodes = plugin.loadouts.Properties().ToArray();
 						foreach (JProperty permissionNode in permissionNodes)
@@ -324,38 +334,38 @@ namespace CustomLoadouts
 								}
 							}
 						}
-                    }
-                    catch (Exception e)
-                    {
-                        plugin.Error("Error checking permission: " + e.ToString());
-                    }
-                    plugin.spawning.Remove(ev.Player.UserId);
-                }).Start();
-            }
-        }
-    }
+					}
+					catch (Exception e)
+					{
+						plugin.Error("Error checking permission: " + e.ToString());
+					}
+					plugin.spawning.Remove(ev.Player.UserId);
+				}).Start();
+			}
+		}
+	}
 
-    internal class ReloadCommand : ICommandHandler
-    {
-        private CustomLoadouts plugin;
+	internal class ReloadCommand : ICommandHandler
+	{
+		private CustomLoadouts plugin;
 
-        public ReloadCommand(CustomLoadouts plugin)
-        {
-            this.plugin = plugin;
-        }
+		public ReloadCommand(CustomLoadouts plugin)
+		{
+			this.plugin = plugin;
+		}
 
-        public string GetCommandDescription()
-        {
-            return "Reloads the config of CustomLoadouts";
-        }
+		public string GetCommandDescription()
+		{
+			return "Reloads the config of CustomLoadouts";
+		}
 
-        public string GetUsage()
-        {
-            return "cl_reload";
-        }
+		public string GetUsage()
+		{
+			return "cl_reload";
+		}
 
-        public string[] OnCall(ICommandSender sender, string[] args)
-        {
+		public string[] OnCall(ICommandSender sender, string[] args)
+		{
 			if (sender is Player player)
 			{
 				if (!player.HasPermission("customloadouts.reload"))
@@ -372,6 +382,6 @@ namespace CustomLoadouts
 				plugin.Error("Could not load config: " + e.ToString());
 			}
 			return new[] { "CustomLoadouts has been reloaded." };
-        }
-    }
+		}
+	}
 }
