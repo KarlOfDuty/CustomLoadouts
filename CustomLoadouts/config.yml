@@ -1,51 +1,55 @@
-# Prints a confirmation whenever a player is given a loadout
+# Prints a confirmation whenever a player is given a loadout.
 verbose: true
-# Prints debug messages
+# Prints debug messages.
 debug: false
-# Adds a ms delay if needed for plugin compatibility
+# Adds a ms delay if needed for plugin compatibility.
 delay: 0
 
-# This sets up the loadouts and the permission nodes required to get them
+# This sets up the loadouts and the permission nodes required to get them.
 # For instance "customloadouts.donatorloadouts" gives all loadouts under the donatorloadouts node below, as long as the class and chance checks are successful.
 customloadouts:
-    # Name of this permission node
+    # Name of this permission node.
     donatorloadouts:
-        # Class, check #resources in the SMOD discord server for class names, set to all to give to all classes
+        # Class, check https://github.com/ServerMod/Smod2/blob/master/Smod2/API/TeamRole.cs for class names (called RoleType in the link).
+        # This one is set to all to give to all classes.
         all:
-            # Percentage chance for item group to spawn
+            # Percentage chance for item group to spawn.
             - 50:
-                # Items to spawn, check #resources in the SMOD discord server for item names.
+                # Items to spawn, check https://github.com/ServerMod/Smod2/blob/master/Smod2/API/Item.cs for item names.
                 # You can start a loadout with REMOVEITEMS and REMOVEAMMO to delete the existing items/ammo.
                 # All weapons spawn with one mag/clip loaded which cannot be removed, giving ammo adds the ammo directly to the player instead of spawning it as an item in their inventory.
-                - COIN # This example has a 50% chance to spawn a coin to all players with the customloadouts.donatorloadouts permission node
+                - COIN # This example has a 50% chance to spawn a coin to all players with the customloadouts.donatorloadouts permission node.
             - 10:
                 - MEDKIT
         SCIENTIST:
             - 10:
-                # Starts with REMOOVEITEMS to clear the default inventory before the items are added.
+                # Starts with REMOVEITEMS to clear the default inventory before the items are added.
                 - REMOVEITEMS
-                - MAJOR_SCIENTIST_KEYCARD
+                - KEYCARD_SCIENTIST_MAJOR
                 - MEDKIT
             - 5:
                 - REMOVEITEMS
                 - REMOVEAMMO
-                - USP
-                - DROPPED_9
-                - DROPPED_9
-                - MAJOR_SCIENTIST_KEYCARD
+                - GUN_USP
+                - AMMO9MM
+                - AMMO9MM
+                - KEYCARD_SCIENTIST_MAJOR
                 - MEDKIT
     moderatorloadouts:
         CLASSD:
             - 30:
                 - FLASHLIGHT
+                - AMMO9MM
+                - AMMO762
+                - AMMO556
     adminloadouts:
         all:
             - 100:
-                - MICROHID
-                - MICROHID
-                - MICROHID
-                - MICROHID
-                - MICROHID
-                - MICROHID
-                - MICROHID
-                - MICROHID
+                - MICRO_HID
+                - MICRO_HID
+                - MICRO_HID
+                - MICRO_HID
+                - MICRO_HID
+                - MICRO_HID
+                - MICRO_HID
+                - MICRO_HID
