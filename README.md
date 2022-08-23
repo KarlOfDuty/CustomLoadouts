@@ -1,6 +1,4 @@
-# CustomLoadouts [![Build Status](https://jenkins.karlofduty.com/job/CustomLoadouts/job/master/badge/icon)](https://jenkins.karlofduty.com/blue/organizations/jenkins/CustomLoadouts/activity) [![Release](https://img.shields.io/github/release/KarlofDuty/CustomLoadouts.svg)](https://github.com/KarlOfDuty/CustomLoadouts/releases) [![Downloads](https://img.shields.io/github/downloads/KarlOfDuty/CustomLoadouts/total.svg)](https://github.com/KarlOfDuty/CustomLoadouts/releases) [![Discord Server](https://img.shields.io/discord/430468637183442945.svg?label=discord)](https://discord.gg/C5qMvkj)
-
-# This plugin was abandoned when the smod plugin api was abandoned.
+# CustomLoadouts [![Build Status](https://jenkins.karlofduty.com/job/CI/job/CustomLoadouts/job/master/badge/icon)](https://jenkins.karlofduty.com/blue/organizations/jenkins/CI%2FCustomLoadouts/activity) [![Release](https://img.shields.io/github/release/KarlofDuty/CustomLoadouts.svg)](https://github.com/KarlOfDuty/CustomLoadouts/releases) [![Downloads](https://img.shields.io/github/downloads/KarlOfDuty/CustomLoadouts/total.svg)](https://github.com/KarlOfDuty/CustomLoadouts/releases) [![Discord Server](https://img.shields.io/discord/430468637183442945.svg?label=discord)](https://discord.gg/C5qMvkj)
 
 An smod plugin similar to default-item but much more customisable to specific players. It can give items based on the player's class and a random chance where access to each loadout can be restricted to specific players or ranks using permissions.
 
