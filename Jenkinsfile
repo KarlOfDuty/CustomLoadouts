@@ -6,6 +6,15 @@ pipeline {
         sh 'nuget restore CustomLoadouts/CustomLoadouts.sln'
       }
     }
+    stage('Use upstream Smod') {
+        when { triggeredBy 'BuildUpstreamCause' }
+        steps {
+            sh ('rm CustomLoadouts/lib/Assembly-CSharp.dll')
+            sh ('rm CustomLoadouts/lib/Smod2.dll')
+            sh ('ln -s $SCPSL_LIBS/Assembly-CSharp.dll CustomLoadouts/lib/Assembly-CSharp.dll')
+            sh ('ln -s $SCPSL_LIBS/Smod2.dll CustomLoadouts/lib/Smod2.dll')
+        }
+    }
     stage('Build') {
       steps {
         sh 'msbuild CustomLoadouts/CustomLoadouts.csproj -restore -p:PostBuildEvent='
@@ -25,10 +34,18 @@ pipeline {
       }
     }
     stage('Archive') {
-      steps {
-        sh 'zip -r CustomLoadouts.zip Plugin'
-        archiveArtifacts(artifacts: 'CustomLoadouts.zip', onlyIfSuccessful: true)
-      }
+        when { not { triggeredBy 'BuildUpstreamCause' } }
+        steps {
+            sh 'zip -r CustomLoadouts.zip Plugin/*'
+            archiveArtifacts(artifacts: 'CustomLoadouts.zip', onlyIfSuccessful: true)
+        }
+    }
+    stage('Send upstream') {
+        when { triggeredBy 'BuildUpstreamCause' }
+        steps {
+            sh 'zip -r CustomLoadouts.zip Plugin/*'
+            sh 'cp CustomLoadouts.zip $PLUGIN_BUILDER_ARTIFACT_DIR'
+        }
     }
   }
 }
