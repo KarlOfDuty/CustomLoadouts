@@ -55,7 +55,7 @@ namespace CustomLoadouts
 
 		public override void Register()
 		{
-			this.AddEventHandlers(new ItemGivingHandler(this), Priority.High);
+			this.AddEventHandlers(new ItemGivingHandler(this), Priority.LATER);
 			this.AddCommand("cl_reload", new ReloadCommand(this));
 			this.AddConfig(new ConfigSetting("cl_global", true, true, "Whether or not to use the global config directory, default is true"));
 		}
@@ -135,13 +135,15 @@ namespace CustomLoadouts
 									// Deletes the existing ammo if set in the config
 									try
 									{
-										player.SetAmmo(AmmoType.DROPPED_5, 0);
-										player.SetAmmo(AmmoType.DROPPED_7, 0);
-										player.SetAmmo(AmmoType.DROPPED_9, 0);
+										player.SetAmmo(AmmoType.AMMO_9_X19, 0);
+										player.SetAmmo(AmmoType.AMMO_556_X45, 0);
+										player.SetAmmo(AmmoType.AMMO_762_X39, 0);
+										player.SetAmmo(AmmoType.AMMO_44_CAL, 0);
+										player.SetAmmo(AmmoType.AMMO_12_GAUGE, 0);
 
 										if (verbose)
 										{
-											this.Info("Cleared ammo of " + player.TeamRole.Role + " " + player.Name + "(" + player.UserId + ").");
+											this.Info("Cleared ammo of " + player.PlayerRole.RoleID + " " + player.Name + "(" + player.UserID + ").");
 										}
 									}
 									catch (Exception e)
@@ -165,7 +167,7 @@ namespace CustomLoadouts
 
 										if (verbose)
 										{
-											this.Info("Cleared inventory of " + player.TeamRole.Role + " " + player.Name + "(" + player.UserId + ").");
+											this.Info("Cleared inventory of " + player.PlayerRole.RoleID + " " + player.Name + "(" + player.UserID + ").");
 										}
 									}
 									catch (Exception e)
@@ -178,15 +180,16 @@ namespace CustomLoadouts
 									}
 									break;
 
+								case "AMMO_556_X45":
 								case "AMMO556":
 								case "DROPPED_5":
 									// Gives a mag of 5.56mm ammo
 									try
 									{
-										player.SetAmmo(AmmoType.DROPPED_5, player.GetAmmo(AmmoType.DROPPED_5) + 25);
+										player.SetAmmo(AmmoType.AMMO_556_X45, player.GetAmmo(AmmoType.AMMO_556_X45) + 40);
 										if (verbose)
 										{
-											this.Info(player.TeamRole.Role + " " + player.Name + "(" + player.UserId + ") was given a mag of 5.56mm ammo (25 shots).");
+											this.Info(player.PlayerRole.RoleID + " " + player.Name + "(" + player.UserID + ") was given a mag of 5.56mm ammo (40 shots).");
 										}
 									}
 									catch (Exception e)
@@ -199,15 +202,16 @@ namespace CustomLoadouts
 									}
 									break;
 
+								case "AMMO_762_X39":
 								case "AMMO762":
 								case "DROPPED_7":
 									// Gives a mag of 7.62mm ammo
 									try
 									{
-										player.SetAmmo(AmmoType.DROPPED_7, player.GetAmmo(AmmoType.DROPPED_7) + 35);
+										player.SetAmmo(AmmoType.AMMO_762_X39, player.GetAmmo(AmmoType.AMMO_762_X39) + 30);
 										if (verbose)
 										{
-											this.Info(player.TeamRole.Role + " " + player.Name + "(" + player.UserId + ") was given a mag of 7.62mm ammo (35 shots).");
+											this.Info(player.PlayerRole.RoleID + " " + player.Name + "(" + player.UserID + ") was given a mag of 7.62mm ammo (30 shots).");
 										}
 									}
 									catch (Exception e)
@@ -220,15 +224,54 @@ namespace CustomLoadouts
 									}
 									break;
 
+								case "AMMO_9_X19":
 								case "AMMO9MM":
 								case "DROPPED_9":
 									// Gives a clip of 9mm ammo
 									try
 									{
-										player.SetAmmo(AmmoType.DROPPED_9, player.GetAmmo(AmmoType.DROPPED_9) + 15);
+										player.SetAmmo(AmmoType.AMMO_9_X19, player.GetAmmo(AmmoType.AMMO_9_X19) + 15);
 										if (verbose)
 										{
-											this.Info(player.TeamRole.Role + " " + player.Name + "(" + player.UserId + ") was given a clip of 9mm ammo (15 shots).");
+											this.Info(player.PlayerRole.RoleID + " " + player.Name + "(" + player.UserID + ") was given a clip of 9mm ammo (15 shots).");
+										}
+									}
+									catch (Exception e)
+									{
+										this.Error("Error occured while giving a clip of 9mm ammo to " + player + ".");
+										if (debug)
+										{
+											this.Error(e.ToString());
+										}
+									}
+									break;
+								
+								case "AMMO_44_CAL":
+									try
+									{
+										player.SetAmmo(AmmoType.AMMO_44_CAL, player.GetAmmo(AmmoType.AMMO_44_CAL) + 6);
+										if (verbose)
+										{
+											this.Info(player.PlayerRole.RoleID + " " + player.Name + "(" + player.UserID + ") was given 40cal ammo (6 shots).");
+										}
+									}
+									catch (Exception e)
+									{
+										this.Error("Error occured while giving a clip of 9mm ammo to " + player + ".");
+										if (debug)
+										{
+											this.Error(e.ToString());
+										}
+									}
+									break;
+								
+								case "AMMO_12_GAUGE":
+									try
+									{
+										player.SetAmmo(AmmoType.AMMO_12_GAUGE, player.GetAmmo(AmmoType.AMMO_12_GAUGE) + 14);
+										if (verbose)
+										{
+											this.Info(player.PlayerRole.RoleID + " " + player.Name + "(" + player.UserID + ") was given 12 gauge ammo (14 shots).");
 										}
 									}
 									catch (Exception e)
@@ -248,7 +291,7 @@ namespace CustomLoadouts
 										player.GiveItem((Smod2.API.ItemType)Enum.Parse(typeof(Smod2.API.ItemType), itemName.ToUpper()));
 										if (verbose)
 										{
-											this.Info(player.TeamRole.Role + " " + player.Name + "(" + player.UserId + ") was given item " + itemName.ToUpper() + ".");
+											this.Info(player.PlayerRole.RoleID + " " + player.Name + "(" + player.UserID + ") was given item " + itemName.ToUpper() + ".");
 										}
 									}
 									catch (Exception e)
@@ -288,20 +331,20 @@ namespace CustomLoadouts
 		public void OnSpawn(PlayerSpawnEvent ev)
 		{
 			// Only runs if not already running
-			if (!plugin.spawning.Contains(ev.Player.UserId))
+			if (!plugin.spawning.Contains(ev.Player.UserID))
 			{
-				plugin.spawning.Add(ev.Player.UserId);
+				plugin.spawning.Add(ev.Player.UserID);
 				new Task(async () =>
 				{
 					// Delays execution until smod has created the object
 					await Task.Delay(500);
 					await Task.Delay(plugin.delay);
 
-					Player player = plugin.Server.GetPlayers(ev.Player.UserId)[0];
+					Player player = plugin.Server.GetPlayers(ev.Player.UserID)[0];
 					if (player == null)
 					{
 						plugin.Warn("Could not find spawning player '" + ev.Player.Name + "', did they disconnect?");
-						plugin.spawning.Remove(ev.Player.UserId);
+						plugin.spawning.Remove(ev.Player.UserID);
 						return;
 					}
 					try
@@ -318,7 +361,7 @@ namespace CustomLoadouts
 									JProperty[] roles = permissionNode.Value.Value<JObject>().Properties().ToArray();
 									foreach (JProperty role in roles)
 									{
-										if (player.TeamRole.Role.ToString() == role.Name || role.Name == "all")
+										if (player.PlayerRole.RoleID.ToString() == role.Name || role.Name == "all")
 										{
 											try
 											{
@@ -342,7 +385,7 @@ namespace CustomLoadouts
 					{
 						plugin.Error("Error checking permission: " + e.ToString());
 					}
-					plugin.spawning.Remove(ev.Player.UserId);
+					plugin.spawning.Remove(ev.Player.UserID);
 				}).Start();
 			}
 		}
